@@ -75,3 +75,25 @@ def test_load_search_endpoint_returns_no_results_until_a_source_is_connected():
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_whatsapp_webhook_receives_text_message(monkeypatch):
+    monkeypatch.setenv('WHATSAPP_VERIFY_TOKEN', 'test-token')
+    verification = client.get('/webhooks/whatsapp', params={
+        'hub.mode': 'subscribe',
+        'hub.verify_token': 'test-token',
+        'hub.challenge': 'challenge-123',
+    })
+    assert verification.status_code == 200
+    assert verification.text == 'challenge-123'
+
+    response = client.post('/webhooks/whatsapp', json={
+        'entry': [{'changes': [{'value': {'messages': [{
+            'id': 'wamid.test',
+            'from': '17868365612',
+            'text': {'body': 'Busca dry van de Miami a Dallas'},
+        }]}}]}]
+    })
+
+    assert response.status_code == 200
+    assert response.json()['status'] == 'received'

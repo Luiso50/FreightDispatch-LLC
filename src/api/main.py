@@ -1,12 +1,14 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 
 from src.agent.matching import CarrierMatch, rank_carriers_for_load
 from src.database.models import Carrier, Load
 from src.integrations.load_sources import LoadSearchCriteria, LoadSourceRegistry
+from src.integrations.whatsapp import IncomingWhatsAppMessage, extract_text_messages
 
 
 class MatchingRequest(BaseModel):
@@ -54,6 +56,7 @@ app.add_middleware(
 
 contact_requests: list[ContactRequest] = []
 load_sources = LoadSourceRegistry()
+incoming_whatsapp_messages: list[IncomingWhatsAppMessage] = []
 
 
 @app.get("/health")
@@ -70,6 +73,25 @@ def match_carriers(request: MatchingRequest) -> list[CarrierMatch]:
 def search_loads(request: LoadSearchRequest) -> list[Load]:
     criteria = LoadSearchCriteria(**request.model_dump())
     return load_sources.search(criteria)
+
+
+@app.get("/webhooks/whatsapp")
+def verify_whatsapp_webhook(
+    hub_mode: str | None = Query(default=None, alias="hub.mode"),
+    verify_token: str | None = Query(default=None, alias="hub.verify_token"),
+    challenge: str | None = Query(default=None, alias="hub.challenge"),
+) -> PlainTextResponse:
+    expected_token = os.getenv("WHATSAPP_VERIFY_TOKEN")
+    if hub_mode != "subscribe" or not expected_token or verify_token != expected_token:
+        raise HTTPException(status_code=403, detail="Webhook verification failed")
+    return PlainTextResponse(challenge or "")
+
+
+@app.post("/webhooks/whatsapp")
+def receive_whatsapp_webhook(payload: dict) -> dict[str, int | str]:
+    messages = extract_text_messages(payload)
+    incoming_whatsapp_messages.extend(messages)
+    return {"status": "received", "messages": len(messages)}
 
 
 @app.post("/contact", status_code=201)
