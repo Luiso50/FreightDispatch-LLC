@@ -65,3 +65,13 @@ def test_contact_request_creates_record():
 
     assert response.status_code == 201
     assert response.json()['status'] == 'received'
+
+
+def test_load_search_endpoint_returns_no_results_until_a_source_is_connected():
+    response = client.post('/loads/search', json={
+        'origin_state': 'FL',
+        'equipment_type': 'Dry Van',
+    })
+
+    assert response.status_code == 200
+    assert response.json() == []

@@ -33,6 +33,8 @@ URLs locales:
 - Salud de la API: `http://127.0.0.1:8000/health`
 - Documentación interactiva: `http://127.0.0.1:8000/docs`
 
-La API expone `POST /matching/carriers` para matching y `POST /contact` para solicitudes comerciales. Las solicitudes de contacto se guardan en memoria mientras el proceso está activo; antes de producción deben persistirse en una base de datos y conectarse a un canal de notificación.
+La API expone `POST /matching/carriers` para matching, `POST /loads/search` para buscar cargas normalizadas y `POST /contact` para solicitudes comerciales. La búsqueda usa un registro de fuentes preparado para conectar Trulos, DAT, Truckstop u otros proveedores mediante APIs o integraciones autorizadas; mientras no haya una fuente conectada devuelve una lista vacía.
+
+Las solicitudes de contacto se guardan en memoria mientras el proceso está activo; antes de producción deben persistirse en una base de datos y conectarse a un canal de notificación. No se debe automatizar el acceso a bolsas de carga mediante scraping sin autorización del proveedor.
 
 La web usa `http://127.0.0.1:8000` como URL local de la API. Antes de publicar, cambia `window.FREIGHTDISPATCH_API_URL` en `Web/index.html` por la URL HTTPS de la API.

@@ -6,6 +6,7 @@ from pydantic import BaseModel, EmailStr
 
 from src.agent.matching import CarrierMatch, rank_carriers_for_load
 from src.database.models import Carrier, Load
+from src.integrations.load_sources import LoadSearchCriteria, LoadSourceRegistry
 
 
 class MatchingRequest(BaseModel):
@@ -18,6 +19,16 @@ class ContactRequest(BaseModel):
     company: str | None = None
     email: EmailStr
     need: str
+
+
+class LoadSearchRequest(BaseModel):
+    origin_city: str | None = None
+    origin_state: str | None = None
+    destination_city: str | None = None
+    destination_state: str | None = None
+    equipment_type: str | None = None
+    pickup_date: str | None = None
+    minimum_rate: float | None = None
 
 
 app = FastAPI(
@@ -42,6 +53,7 @@ app.add_middleware(
 )
 
 contact_requests: list[ContactRequest] = []
+load_sources = LoadSourceRegistry()
 
 
 @app.get("/health")
@@ -52,6 +64,12 @@ def health_check() -> dict[str, str]:
 @app.post("/matching/carriers", response_model=list[CarrierMatch])
 def match_carriers(request: MatchingRequest) -> list[CarrierMatch]:
     return rank_carriers_for_load(request.load, request.carriers)
+
+
+@app.post("/loads/search", response_model=list[Load])
+def search_loads(request: LoadSearchRequest) -> list[Load]:
+    criteria = LoadSearchCriteria(**request.model_dump())
+    return load_sources.search(criteria)
 
 
 @app.post("/contact", status_code=201)
