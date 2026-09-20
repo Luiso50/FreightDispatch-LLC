@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 
 from src.agent.matching import CarrierMatch, rank_carriers_for_load
+from src.agent.request_parser import parse_load_request
 from src.database.models import Carrier, Load
 from src.integrations.load_sources import LoadSearchCriteria, LoadSourceRegistry
 from src.integrations.whatsapp import IncomingWhatsAppMessage, extract_text_messages
@@ -76,6 +77,17 @@ def match_carriers(request: MatchingRequest) -> list[CarrierMatch]:
 def search_loads(request: LoadSearchRequest) -> list[Load]:
     criteria = LoadSearchCriteria(**request.model_dump())
     return load_sources.search(criteria)
+
+
+@app.post("/assistant/search")
+def search_from_message(request: dict[str, str]) -> dict[str, object]:
+    message = request.get("message", "")
+    criteria = parse_load_request(message)
+    return {
+        "message": message,
+        "criteria": criteria.__dict__,
+        "loads": load_sources.search(criteria),
+    }
 
 
 @app.get("/webhooks/whatsapp")

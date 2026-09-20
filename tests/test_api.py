@@ -77,6 +77,24 @@ def test_load_search_endpoint_returns_no_results_until_a_source_is_connected():
     assert response.json() == []
 
 
+def test_assistant_turns_whatsapp_request_into_search_criteria():
+    response = client.post('/assistant/search', json={
+        'message': 'Busca un reefer de Miami a Dallas para mañana'
+    })
+
+    assert response.status_code == 200
+    assert response.json()['criteria'] == {
+        'origin_city': 'Miami',
+        'origin_state': None,
+        'destination_city': 'Dallas',
+        'destination_state': None,
+        'equipment_type': 'Reefer',
+        'pickup_date': None,
+        'minimum_rate': None,
+    }
+    assert response.json()['loads'] == []
+
+
 def test_whatsapp_webhook_receives_text_message(monkeypatch):
     monkeypatch.setenv('WHATSAPP_VERIFY_TOKEN', 'test-token')
     verification = client.get('/webhooks/whatsapp', params={
