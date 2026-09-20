@@ -97,3 +97,27 @@ def test_whatsapp_webhook_receives_text_message(monkeypatch):
 
     assert response.status_code == 200
     assert response.json()['status'] == 'received'
+
+
+def test_whatsapp_webhook_validates_meta_signature(monkeypatch):
+    import hashlib
+    import hmac
+    import json
+
+    secret = 'app-secret'
+    monkeypatch.setenv('WHATSAPP_APP_SECRET', secret)
+    payload = {'entry': []}
+    raw_body = json.dumps(payload).encode()
+    signature = 'sha256=' + hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
+
+    valid = client.post('/webhooks/whatsapp', content=raw_body, headers={
+        'X-Hub-Signature-256': signature,
+        'Content-Type': 'application/json',
+    })
+    invalid = client.post('/webhooks/whatsapp', content=raw_body, headers={
+        'X-Hub-Signature-256': 'sha256=invalid',
+        'Content-Type': 'application/json',
+    })
+
+    assert valid.status_code == 200
+    assert invalid.status_code == 403

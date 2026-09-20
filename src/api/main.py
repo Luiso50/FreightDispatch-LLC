@@ -1,6 +1,9 @@
+import hashlib
+import hmac
+import json
 import os
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
@@ -88,7 +91,22 @@ def verify_whatsapp_webhook(
 
 
 @app.post("/webhooks/whatsapp")
-def receive_whatsapp_webhook(payload: dict) -> dict[str, int | str]:
+async def receive_whatsapp_webhook(request: Request) -> dict[str, int | str]:
+    raw_body = await request.body()
+    app_secret = os.getenv("WHATSAPP_APP_SECRET")
+    signature = request.headers.get("X-Hub-Signature-256", "")
+    if app_secret:
+        expected_signature = "sha256=" + hmac.new(
+            app_secret.encode(), raw_body, hashlib.sha256
+        ).hexdigest()
+        if not hmac.compare_digest(signature, expected_signature):
+            raise HTTPException(status_code=403, detail="Invalid webhook signature")
+
+    try:
+        payload = json.loads(raw_body)
+    except json.JSONDecodeError as error:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload") from error
+
     messages = extract_text_messages(payload)
     incoming_whatsapp_messages.extend(messages)
     return {"status": "received", "messages": len(messages)}
