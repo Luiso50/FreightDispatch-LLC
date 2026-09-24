@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
-  const apiBaseUrl = window.LOADTWIN_API_URL || 'http://127.0.0.1:8000';
+  const apiBaseUrl = window.LOADTWIN_API_URL || 'https://freightdispatch-api.onrender.com';
 
   const menuButton = document.querySelector('.menu-toggle');
   const mainNav = document.querySelector('.main-nav');
