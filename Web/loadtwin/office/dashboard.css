@@ -90,6 +90,12 @@ h1 em { color: var(--orange); font-style: normal; }
 .driver-info strong { font: 600 12px var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .driver-info small { color: var(--ink-soft); font-size: 10px; }
 .driver-status { background: var(--mint); color: var(--teal); font-size: 9px; margin-left: auto; padding: 3px 6px; text-transform: uppercase; }
+.broker-panel { margin: 0 auto 22px; max-width: 1280px; }
+.broker-list { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); margin-top: 21px; }
+.broker-row { border: 1px solid var(--line); display: grid; gap: 4px; padding: 13px; }
+.broker-row strong { font: 600 13px var(--display); }
+.broker-row small { color: var(--ink-soft); font-size: 10px; }
+.broker-rating { color: var(--orange); font-size: 11px; letter-spacing: .08em; }
 .message-list { display: grid; gap: 12px; margin-top: 21px; max-height: 154px; overflow-y: auto; }
 .message-item { align-items: flex-start; border-bottom: 1px solid var(--line); display: flex; gap: 11px; padding-bottom: 11px; }
 .message-avatar { align-items: center; background: var(--mint); color: var(--teal); display: flex; flex: 0 0 28px; font: 700 11px var(--display); height: 28px; justify-content: center; }

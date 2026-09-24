@@ -54,19 +54,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
   };
 
+  const renderBrokers = (brokers = []) => {
+    const list = document.querySelector('#broker-list');
+    if (!brokers.length) {
+      list.innerHTML = '<div class="empty-state">No brokers registered.</div>';
+      return;
+    }
+    list.innerHTML = brokers.slice(0, 6).map((broker) => {
+      const rating = broker.internal_rating ? '★'.repeat(broker.internal_rating) : 'Rating pending';
+      const contact = broker.contact_person || broker.email || broker.phone || 'Contact pending';
+      return `<div class="broker-row"><strong>${escapeHtml(broker.name)}</strong><small>${escapeHtml(contact)}</small><small>${escapeHtml(broker.mc_number || 'MC pending')} · ${escapeHtml(broker.payment_terms || 'Terms pending')}</small><span class="broker-rating">${escapeHtml(rating)}</span></div>`;
+    }).join('');
+  };
+
   const loadSummary = async () => {
     refreshButton.classList.add('loading');
     errorBanner.hidden = true;
     try {
-      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse] = await Promise.all([
+      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse, brokersResponse] = await Promise.all([
         fetch(`${apiBaseUrl}/dashboard/summary`),
         fetch(`${apiBaseUrl}/loads`),
         fetch(`${apiBaseUrl}/contracts/renewals?days=30`),
         fetch(`${apiBaseUrl}/drivers`),
+        fetch(`${apiBaseUrl}/brokers`),
       ]);
-      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok) throw new Error('Dashboard request failed');
-      const [summary, loads, renewals, drivers] = await Promise.all([
-        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(),
+      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok || !brokersResponse.ok) throw new Error('Dashboard request failed');
+      const [summary, loads, renewals, drivers, brokers] = await Promise.all([
+        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(), brokersResponse.json(),
       ]);
       setText('#active-drivers', summary.active_drivers);
       setText('#active-loads', summary.active_loads);
@@ -80,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setText('#load-nav-count', summary.active_loads);
       renderLoads(loads);
       renderDrivers(drivers);
+      renderBrokers(brokers);
       document.querySelector('#contract-progress').style.width = `${summary.pending_contracts ? 72 : 100}%`;
       renderMessages(summary.recent_messages);
       connectionLabel.textContent = 'Connected to API';
