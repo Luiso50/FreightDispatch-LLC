@@ -86,6 +86,13 @@
 
       <section class="panel broker-panel" id="brokers">
         <div class="panel-heading"><div><span class="panel-kicker">Partner network</span><h2>Broker directory</h2></div><i data-lucide="building-2"></i></div>
+        <form class="quick-form" id="broker-form">
+          <label>Broker name<input name="name" placeholder="Company name" required></label>
+          <label>Contact<input name="contact_person" placeholder="Contact person"></label>
+          <label>MC number<input name="mc_number" placeholder="MC-000000"></label>
+          <button class="quick-submit" type="submit"><i data-lucide="plus"></i> Add broker</button>
+          <span class="quick-form-status" id="broker-form-status" role="status"></span>
+        </form>
         <div class="broker-list" id="broker-list"><div class="empty-state">No brokers registered.</div></div>
       </section>
     </main>

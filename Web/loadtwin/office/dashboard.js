@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshButton = document.querySelector('#refresh-button');
   const errorBanner = document.querySelector('#error-banner');
   const connectionLabel = document.querySelector('#connection-label');
+  const brokerForm = document.querySelector('#broker-form');
+  const brokerFormStatus = document.querySelector('#broker-form-status');
 
   const setText = (selector, value) => {
     const element = document.querySelector(selector);
@@ -107,5 +109,27 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   refreshButton.addEventListener('click', loadSummary);
+  brokerForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = brokerForm.querySelector('button');
+    submitButton.disabled = true;
+    brokerFormStatus.textContent = 'Saving...';
+    try {
+      const payload = Object.fromEntries(new FormData(brokerForm));
+      const response = await fetch(`${apiBaseUrl}/brokers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error('Broker request failed');
+      brokerForm.reset();
+      brokerFormStatus.textContent = 'Broker added';
+      await loadSummary();
+    } catch (error) {
+      brokerFormStatus.textContent = 'Could not save broker';
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
   loadSummary();
 });
