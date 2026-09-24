@@ -12,6 +12,244 @@ def test_health_check():
     assert response.json() == {'status': 'ok'}
 
 
+def test_driver_onboarding_reports_missing_documents():
+    response = client.post('/drivers', json={
+        'name': 'Luis Perez',
+        'phone': '+17860000001',
+        'equipment_types': ['Flatbed'],
+    })
+
+    assert response.status_code == 201
+    driver_id = response.json()['id']
+    missing = client.get(f'/drivers/{driver_id}/missing-documents')
+
+    assert missing.status_code == 200
+    assert missing.json() == ['carrier_packet', 'dot', 'insurance', 'mc', 'w9']
+
+
+def test_driver_document_is_removed_from_missing_documents():
+    driver = client.post('/drivers', json={
+        'name': 'Ana Torres',
+        'phone': '+17860000002',
+    }).json()
+
+    response = client.post(f"/drivers/{driver['id']}/documents", json={
+        'driver_id': driver['id'],
+        'document_type': 'w9',
+        'verified': True,
+    })
+
+    assert response.status_code == 201
+    assert 'w9' not in client.get(f"/drivers/{driver['id']}/missing-documents").json()
+
+
+def test_load_evidence_can_be_reconstructed():
+    response = client.post('/loads/L-9001/evidence', json={
+        'load_id': 'L-9001',
+        'evidence_type': 'whatsapp',
+        'description': 'Driver accepted the rate confirmation',
+        'source': '+17860000001',
+    })
+
+    assert response.status_code == 201
+    evidence = client.get('/loads/L-9001/evidence')
+    assert evidence.status_code == 200
+    assert evidence.json()[0]['description'] == 'Driver accepted the rate confirmation'
+
+
+def test_email_evidence_preserves_legal_metadata():
+    response = client.post('/loads/L-9001/evidence/email', json={
+        'sender': 'broker@example.com',
+        'recipients': ['dispatch@freightdispatchllc.com'],
+        'subject': 'Rate confirmation L-9001',
+        'body': 'Please find the signed rate confirmation attached.',
+        'document_url': 'https://files.example.test/rate-confirmation.pdf',
+    })
+
+    assert response.status_code == 201
+    event = response.json()
+    assert event['evidence_type'] == 'email'
+    assert event['metadata']['subject'] == 'Rate confirmation L-9001'
+    assert event['document_url'].endswith('rate-confirmation.pdf')
+
+
+def test_whatsapp_message_is_persisted_once_and_linked_to_driver():
+    driver = client.post('/drivers', json={
+        'name': 'Message Driver',
+        'phone': '+17860000003',
+    }).json()
+    payload = {
+        'entry': [{'changes': [{'value': {'messages': [{
+            'id': 'wamid.idempotent',
+            'from': driver['phone'],
+            'text': {'body': 'Empty in Houston, Flatbed'},
+        }]}}]}]
+    }
+
+    first = client.post('/webhooks/whatsapp', json=payload)
+    second = client.post('/webhooks/whatsapp', json=payload)
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    messages = client.get('/messages', params={'sender': driver['phone']}).json()
+    assert len(messages) == 1
+    assert messages[0]['driver_id'] == driver['id']
+    assert messages[0]['intent'] == 'load_search'
+
+
+def test_unknown_whatsapp_sender_starts_one_onboarding_case():
+    payload = {
+        'entry': [{'changes': [{'value': {'messages': [{
+            'id': 'wamid.onboarding',
+            'from': '+17860000004',
+            'text': {'body': 'I am empty in Houston. Flatbed.'},
+        }]}}]}]
+    }
+
+    client.post('/webhooks/whatsapp', json=payload)
+    client.post('/webhooks/whatsapp', json=payload)
+    response = client.get('/onboarding/+17860000004')
+
+    assert response.status_code == 200
+    assert response.json()['status'] == 'pending'
+    assert response.json()['required_documents'] == [
+        'mc', 'dot', 'insurance', 'w9', 'carrier_packet'
+    ]
+    assert response.json()['last_message'] == 'I am empty in Houston. Flatbed.'
+
+
+def test_onboarding_message_lists_missing_documents():
+    phone = '+17860000006'
+    client.post('/webhooks/whatsapp', json={
+        'entry': [{'changes': [{'value': {'messages': [{
+            'id': 'wamid.message-preview',
+            'from': phone,
+            'text': {'body': 'I want to onboard'},
+        }]}}]}]
+    })
+
+    response = client.get(f'/onboarding/{phone}/message')
+
+    assert response.status_code == 200
+    assert 'MC Authority' in response.json()['message']
+    assert 'Carrier packet' in response.json()['message']
+
+
+def test_onboarding_completes_driver_only_after_all_documents_are_verified():
+    phone = '+17860000005'
+    client.post('/webhooks/whatsapp', json={
+        'entry': [{'changes': [{'value': {'messages': [{
+            'id': 'wamid.complete',
+            'from': phone,
+            'text': {'body': 'Please onboard me'},
+        }]}}]}]
+    })
+
+    incomplete = client.post(f'/onboarding/{phone}/complete', json={
+        'name': 'Complete Driver',
+        'equipment_types': ['Flatbed'],
+    })
+    assert incomplete.status_code == 409
+
+    for document_type in ['mc', 'dot', 'insurance', 'w9', 'carrier_packet']:
+        response = client.post(f'/onboarding/{phone}/documents', json={
+            'document_type': document_type,
+            'document_url': 'https://files.example.test/document.pdf' if document_type == 'insurance' else None,
+            'expires_at': '2027-09-24' if document_type == 'insurance' else None,
+            'verified': True,
+        })
+        assert response.status_code == 200
+
+    completed = client.post(f'/onboarding/{phone}/complete', json={
+        'name': 'Complete Driver',
+        'equipment_types': ['Flatbed'],
+    })
+
+    assert completed.status_code == 200
+    assert completed.json()['status'] == 'active'
+    assert client.get(f'/onboarding/{phone}').json()['status'] == 'completed'
+    driver_documents = client.get(f"/drivers/{completed.json()['id']}/documents").json()
+    insurance = next(document for document in driver_documents if document['document_type'] == 'insurance')
+    assert insurance['document_url'] == 'https://files.example.test/document.pdf'
+    assert insurance['expires_at'] == '2027-09-24'
+
+
+def test_dashboard_summary_reports_operational_metrics():
+    client.post('/drivers', json={
+        'name': 'Dashboard Driver',
+        'phone': '+17860000007',
+        'status': 'active',
+    })
+    client.post('/loads', json={
+        'id': 'L-DASH-001',
+        'origin': {'city': 'Houston', 'state': 'TX'},
+        'destination': {'city': 'Dallas', 'state': 'TX'},
+        'equipment_type': 'Flatbed',
+        'status': 'available',
+    })
+
+    response = client.get('/dashboard/summary')
+
+    assert response.status_code == 200
+    summary = response.json()
+    assert summary['active_drivers'] >= 1
+    assert summary['active_loads'] >= 1
+    assert 'pending_commissions' in summary
+    assert 'missing_documents' in summary
+    assert isinstance(summary['recent_messages'], list)
+
+
+def test_contract_can_be_accepted():
+    contract = client.post('/contracts', json={
+        'id': 'CON-9001',
+        'trip_id': 'TRIP-9001',
+        'contract_number': 'FD-2026-001',
+        'customer_name': 'Acme Brokerage',
+        'carrier_name': 'Luis Perez Trucking',
+        'agreed_rate': '2200.00',
+    }).json()
+
+    response = client.post(f"/contracts/{contract['id']}/accept")
+
+    assert response.status_code == 200
+    assert response.json()['status'] == 'accepted'
+    assert response.json()['signed_at'] is not None
+
+
+def test_contract_renewal_alert_returns_contracts_inside_window():
+    client.post('/contracts', json={
+        'id': 'CON-RENEWAL-001',
+        'trip_id': 'TRIP-RENEWAL-001',
+        'contract_number': 'FD-RENEWAL-001',
+        'customer_name': 'Renewal Brokerage',
+        'carrier_name': 'Renewal Carrier',
+        'agreed_rate': '1800.00',
+        'renewal_date': '2026-10-01',
+    })
+
+    response = client.get('/contracts/renewals', params={'days': 30})
+
+    assert response.status_code == 200
+    assert any(contract['id'] == 'CON-RENEWAL-001' for contract in response.json())
+
+
+def test_commissions_can_be_filtered_by_status():
+    client.post('/commissions', json={
+        'id': 'COM-9001',
+        'load_id': 'L-9001',
+        'driver_id': 'DRV-9001',
+        'rate': '2200.00',
+        'percentage': '10',
+        'amount': '220.00',
+        'status': 'pending',
+    })
+
+    response = client.get('/commissions', params={'status': 'pending'})
+
+    assert response.status_code == 200
+    assert response.json()[0]['amount'] == '220.00'
+
+
 def test_matching_route_returns_compatible_carrier():
     payload = {
         'load': {
