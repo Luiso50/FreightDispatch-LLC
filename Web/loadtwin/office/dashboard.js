@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const brokerFormStatus = document.querySelector('#broker-form-status');
   const loadForm = document.querySelector('#load-form');
   const loadFormStatus = document.querySelector('#load-form-status');
+  const driverForm = document.querySelector('#driver-form');
+  const driverFormStatus = document.querySelector('#driver-form-status');
 
   const setText = (selector, value) => {
     const element = document.querySelector(selector);
@@ -159,6 +161,33 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadSummary();
     } catch (error) {
       loadFormStatus.textContent = 'Could not save load';
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+  driverForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = driverForm.querySelector('button');
+    submitButton.disabled = true;
+    driverFormStatus.textContent = 'Saving...';
+    try {
+      const values = Object.fromEntries(new FormData(driverForm));
+      const payload = {
+        name: values.name,
+        phone: values.phone,
+        equipment_types: values.equipment_type ? [values.equipment_type] : [],
+      };
+      const response = await fetch(`${apiBaseUrl}/drivers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error('Driver request failed');
+      driverForm.reset();
+      driverFormStatus.textContent = 'Driver added';
+      await loadSummary();
+    } catch (error) {
+      driverFormStatus.textContent = 'Could not save driver';
     } finally {
       submitButton.disabled = false;
     }
