@@ -83,6 +83,13 @@ h1 em { color: var(--orange); font-style: normal; }
 .onboarding-body p { color: var(--ink-soft); font-size: 12px; margin: 0 0 13px; max-width: 190px; }
 .onboarding-body a { color: var(--teal); font-size: 12px; font-weight: 700; }
 .onboarding-body a svg { height: 13px; vertical-align: -2px; width: 13px; }
+.driver-list { border-top: 1px solid var(--line); display: grid; gap: 10px; margin-top: 25px; padding-top: 15px; }
+.driver-row { align-items: center; display: flex; gap: 10px; }
+.driver-avatar { align-items: center; background: var(--teal); color: #fff; display: flex; flex: 0 0 28px; font: 700 10px var(--display); height: 28px; justify-content: center; }
+.driver-info { display: grid; gap: 1px; min-width: 0; }
+.driver-info strong { font: 600 12px var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.driver-info small { color: var(--ink-soft); font-size: 10px; }
+.driver-status { background: var(--mint); color: var(--teal); font-size: 9px; margin-left: auto; padding: 3px 6px; text-transform: uppercase; }
 .message-list { display: grid; gap: 12px; margin-top: 21px; max-height: 154px; overflow-y: auto; }
 .message-item { align-items: flex-start; border-bottom: 1px solid var(--line); display: flex; gap: 11px; padding-bottom: 11px; }
 .message-avatar { align-items: center; background: var(--mint); color: var(--teal); display: flex; flex: 0 0 28px; font: 700 11px var(--display); height: 28px; justify-content: center; }

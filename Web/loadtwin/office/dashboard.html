@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="dashboard.css">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>window.LOADTWIN_API_URL = window.LOADTWIN_API_URL || 'http://127.0.0.1:8000';</script>
-  <script defer src="dashboard.js"></script>
+  <script defer src="dashboard.js?v=2"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -62,6 +62,7 @@
         <article class="panel onboarding-panel" id="drivers">
           <div class="panel-heading"><div><span class="panel-kicker">Attention needed</span><h2>Onboarding health</h2></div><i data-lucide="file-up"></i></div>
           <div class="onboarding-body"><div class="donut"><strong id="missing-documents">--</strong><span>missing<br>documents</span></div><div><p>Keep carrier files complete before the next booking.</p><a href="#drivers">Review driver files <i data-lucide="arrow-up-right"></i></a></div></div>
+          <div class="driver-list" id="driver-list"><div class="empty-state">No drivers registered.</div></div>
         </article>
         <article class="panel activity-panel" id="messages">
           <div class="panel-heading"><div><span class="panel-kicker">Latest signals</span><h2>Message stream</h2></div><i data-lucide="radio"></i></div>

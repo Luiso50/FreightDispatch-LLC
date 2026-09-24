@@ -41,18 +41,32 @@ document.addEventListener('DOMContentLoaded', () => {
     list.innerHTML = loads.slice(0, 5).map((load) => `<div class="load-row"><div class="load-route"><strong>${escapeHtml(load.origin.city)} → ${escapeHtml(load.destination.city)}</strong><small>${escapeHtml(load.equipment_type)} · ${escapeHtml(load.id)}</small></div><div class="load-meta"><strong>${load.offered_rate ? formatCurrency(load.offered_rate) : 'Rate pending'}</strong><small>${escapeHtml(load.origin.state)} / ${escapeHtml(load.destination.state)}</small></div><span class="load-status">${escapeHtml(load.status.replace('_', ' '))}</span></div>`).join('');
   };
 
+  const renderDrivers = (drivers = []) => {
+    const list = document.querySelector('#driver-list');
+    if (!drivers.length) {
+      list.innerHTML = '<div class="empty-state">No drivers registered.</div>';
+      return;
+    }
+    list.innerHTML = drivers.slice(0, 5).map((driver) => {
+      const initial = (driver.name || '?').slice(0, 2).toUpperCase();
+      const equipment = driver.equipment_types?.join(', ') || 'Equipment pending';
+      return `<div class="driver-row"><span class="driver-avatar">${escapeHtml(initial)}</span><div class="driver-info"><strong>${escapeHtml(driver.name)}</strong><small>${escapeHtml(equipment)}</small></div><span class="driver-status">${escapeHtml(driver.status)}</span></div>`;
+    }).join('');
+  };
+
   const loadSummary = async () => {
     refreshButton.classList.add('loading');
     errorBanner.hidden = true;
     try {
-      const [summaryResponse, loadsResponse, renewalsResponse] = await Promise.all([
+      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse] = await Promise.all([
         fetch(`${apiBaseUrl}/dashboard/summary`),
         fetch(`${apiBaseUrl}/loads`),
         fetch(`${apiBaseUrl}/contracts/renewals?days=30`),
+        fetch(`${apiBaseUrl}/drivers`),
       ]);
-      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok) throw new Error('Dashboard request failed');
-      const [summary, loads, renewals] = await Promise.all([
-        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(),
+      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok) throw new Error('Dashboard request failed');
+      const [summary, loads, renewals, drivers] = await Promise.all([
+        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(),
       ]);
       setText('#active-drivers', summary.active_drivers);
       setText('#active-loads', summary.active_loads);
@@ -65,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setText('#renewal-count', renewals.length);
       setText('#load-nav-count', summary.active_loads);
       renderLoads(loads);
+      renderDrivers(drivers);
       document.querySelector('#contract-progress').style.width = `${summary.pending_contracts ? 72 : 100}%`;
       renderMessages(summary.recent_messages);
       connectionLabel.textContent = 'Connected to API';
