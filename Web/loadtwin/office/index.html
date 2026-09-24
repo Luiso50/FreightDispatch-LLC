@@ -74,6 +74,16 @@
       <section class="lower-grid">
         <article class="panel lane-panel" id="loads">
           <div class="panel-heading"><div><span class="panel-kicker">Dispatch board</span><h2>Load activity</h2></div><a class="icon-link" href="#loads" title="Open load board" aria-label="Open load board"><i data-lucide="arrow-up-right"></i></a></div>
+          <form class="quick-form load-form" id="load-form">
+            <label>Origin city<input name="origin_city" placeholder="Houston" required></label>
+            <label>Origin state<input name="origin_state" placeholder="TX" maxlength="2" required></label>
+            <label>Destination city<input name="destination_city" placeholder="Dallas" required></label>
+            <label>Destination state<input name="destination_state" placeholder="TX" maxlength="2" required></label>
+            <label>Equipment<input name="equipment_type" placeholder="Flatbed" required></label>
+            <label>Rate<input name="offered_rate" type="number" min="0" step="0.01" placeholder="2200"></label>
+            <button class="quick-submit" type="submit"><i data-lucide="plus"></i> Add load</button>
+            <span class="quick-form-status" id="load-form-status" role="status"></span>
+          </form>
           <div class="load-list" id="load-list"><div class="load-placeholder"><div class="route-line"><span></span><i data-lucide="truck"></i><span></span></div><strong>No loads waiting</strong><p>Registered loads will appear here as they move through the operation.</p></div></div>
         </article>
         <article class="panel contracts-panel" id="contracts">

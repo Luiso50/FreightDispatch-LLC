@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const connectionLabel = document.querySelector('#connection-label');
   const brokerForm = document.querySelector('#broker-form');
   const brokerFormStatus = document.querySelector('#broker-form-status');
+  const loadForm = document.querySelector('#load-form');
+  const loadFormStatus = document.querySelector('#load-form-status');
 
   const setText = (selector, value) => {
     const element = document.querySelector(selector);
@@ -127,6 +129,36 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadSummary();
     } catch (error) {
       brokerFormStatus.textContent = 'Could not save broker';
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+  loadForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = loadForm.querySelector('button');
+    submitButton.disabled = true;
+    loadFormStatus.textContent = 'Saving...';
+    try {
+      const values = Object.fromEntries(new FormData(loadForm));
+      const payload = {
+        id: `WEB-${Date.now()}`,
+        origin: { city: values.origin_city, state: values.origin_state.toUpperCase() },
+        destination: { city: values.destination_city, state: values.destination_state.toUpperCase() },
+        equipment_type: values.equipment_type,
+        offered_rate: values.offered_rate || null,
+        status: 'available',
+      };
+      const response = await fetch(`${apiBaseUrl}/loads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error('Load request failed');
+      loadForm.reset();
+      loadFormStatus.textContent = 'Load added';
+      await loadSummary();
+    } catch (error) {
+      loadFormStatus.textContent = 'Could not save load';
     } finally {
       submitButton.disabled = false;
     }
