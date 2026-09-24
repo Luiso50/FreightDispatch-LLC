@@ -45,12 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshButton.classList.add('loading');
     errorBanner.hidden = true;
     try {
-      const [summaryResponse, loadsResponse] = await Promise.all([
+      const [summaryResponse, loadsResponse, renewalsResponse] = await Promise.all([
         fetch(`${apiBaseUrl}/dashboard/summary`),
         fetch(`${apiBaseUrl}/loads`),
+        fetch(`${apiBaseUrl}/contracts/renewals?days=30`),
       ]);
-      if (!summaryResponse.ok || !loadsResponse.ok) throw new Error('Dashboard request failed');
-      const [summary, loads] = await Promise.all([summaryResponse.json(), loadsResponse.json()]);
+      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok) throw new Error('Dashboard request failed');
+      const [summary, loads, renewals] = await Promise.all([
+        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(),
+      ]);
       setText('#active-drivers', summary.active_drivers);
       setText('#active-loads', summary.active_loads);
       setText('#revenue', formatCurrency(summary.revenue));
@@ -59,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setText('#pending-commissions', summary.pending_commissions);
       setText('#missing-documents', summary.missing_documents);
       setText('#contract-count', summary.pending_contracts);
+      setText('#renewal-count', renewals.length);
       setText('#load-nav-count', summary.active_loads);
       renderLoads(loads);
       document.querySelector('#contract-progress').style.width = `${summary.pending_contracts ? 72 : 100}%`;
