@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel operativo de LoadTwin LLC.">
+  <title>LoadTwin Office | LoadTwin LLC</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>window.LOADTWIN_API_URL = window.LOADTWIN_API_URL || 'http://127.0.0.1:8000';</script>
+  <script defer src="dashboard.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegación operativa">
+      <a class="brand" href="../index.html" aria-label="Volver a LoadTwin LLC">
+        <span class="brand-mark">FD</span>
+        <span>Load<span>Twin</span><small>LLC</small></span>
+      </a>
+      <div class="workspace-label">Operations desk</div>
+      <nav class="side-nav">
+        <a class="active" href="#overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></a>
+        <a href="#loads"><i data-lucide="route"></i><span>Loads</span><b id="load-nav-count">0</b></a>
+        <a href="#drivers"><i data-lucide="truck"></i><span>Drivers</span></a>
+        <a href="#contracts"><i data-lucide="file-signature"></i><span>Contracts</span></a>
+        <a href="#messages"><i data-lucide="message-square-text"></i><span>Messages</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="live-status"><span></span><div><strong>System status</strong><small id="connection-label">Checking API...</small></div></div>
+        <a class="back-link" href="../index.html"><i data-lucide="arrow-left"></i> Public site</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main" id="overview">
+      <header class="dashboard-header">
+        <div>
+          <div class="eyebrow"><span class="pulse-dot"></span> Live operations</div>
+          <h1>Good morning, <em>team.</em></h1>
+          <p>One clear view of the work moving through LoadTwin.</p>
+        </div>
+        <button class="refresh-button" id="refresh-button" type="button" title="Refresh metrics" aria-label="Refresh metrics">
+          <i data-lucide="refresh-cw"></i><span>Refresh</span>
+        </button>
+      </header>
+
+      <div class="error-banner" id="error-banner" role="alert" hidden>
+        <i data-lucide="triangle-alert"></i><span>API unavailable. Start the local API to load live data.</span>
+      </div>
+
+      <section class="metric-grid" aria-label="Key metrics">
+        <article class="metric-card metric-primary"><div class="metric-icon"><i data-lucide="truck"></i></div><span>Active drivers</span><strong id="active-drivers">--</strong><small>Ready for dispatch</small></article>
+        <article class="metric-card"><div class="metric-icon"><i data-lucide="route"></i></div><span>Active loads</span><strong id="active-loads">--</strong><small id="load-caption">Across current lanes</small></article>
+        <article class="metric-card"><div class="metric-icon"><i data-lucide="badge-dollar-sign"></i></div><span>Revenue tracked</span><strong id="revenue">--</strong><small>Commission volume</small></article>
+        <article class="metric-card"><div class="metric-icon warning-icon"><i data-lucide="clock-3"></i></div><span>Pending actions</span><strong id="pending-actions">--</strong><small><span id="pending-contracts">0</span> contracts · <span id="pending-commissions">0</span> commissions</small></article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel onboarding-panel" id="drivers">
+          <div class="panel-heading"><div><span class="panel-kicker">Attention needed</span><h2>Onboarding health</h2></div><i data-lucide="file-up"></i></div>
+          <div class="onboarding-body"><div class="donut"><strong id="missing-documents">--</strong><span>missing<br>documents</span></div><div><p>Keep carrier files complete before the next booking.</p><a href="#drivers">Review driver files <i data-lucide="arrow-up-right"></i></a></div></div>
+        </article>
+        <article class="panel activity-panel" id="messages">
+          <div class="panel-heading"><div><span class="panel-kicker">Latest signals</span><h2>Message stream</h2></div><i data-lucide="radio"></i></div>
+          <div class="message-list" id="message-list"><div class="empty-state">Waiting for messages...</div></div>
+        </article>
+      </section>
+
+      <section class="lower-grid">
+        <article class="panel lane-panel" id="loads">
+          <div class="panel-heading"><div><span class="panel-kicker">Dispatch board</span><h2>Load activity</h2></div><a class="icon-link" href="#loads" title="Open load board" aria-label="Open load board"><i data-lucide="arrow-up-right"></i></a></div>
+          <div class="load-list" id="load-list"><div class="load-placeholder"><div class="route-line"><span></span><i data-lucide="truck"></i><span></span></div><strong>No loads waiting</strong><p>Registered loads will appear here as they move through the operation.</p></div></div>
+        </article>
+        <article class="panel contracts-panel" id="contracts">
+          <div class="panel-heading"><div><span class="panel-kicker">Legal queue</span><h2>Contracts</h2></div><i data-lucide="file-check-2"></i></div>
+          <div class="contract-stat"><strong id="contract-count">--</strong><span>pending signatures</span></div>
+          <div class="progress-track"><span id="contract-progress"></span></div>
+          <p class="panel-note"><span id="renewal-count">0</span> renewals in the next 30 days. Accepted contracts stay attached to the operational record.</p>
+        </article>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
