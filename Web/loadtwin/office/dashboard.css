@@ -93,8 +93,8 @@ h1 em { color: var(--orange); font-style: normal; }
 .broker-panel { margin: 0 auto 22px; max-width: 1280px; }
 .quick-form { align-items: end; display: grid; gap: 10px; grid-template-columns: 1.2fr 1fr 1fr auto; margin-top: 20px; }
 .quick-form label { color: var(--ink-soft); display: grid; font-size: 10px; font-weight: 700; gap: 4px; }
-.quick-form input { border: 1px solid var(--line); color: var(--ink); font: 12px var(--body); outline: none; padding: 9px 10px; width: 100%; }
-.quick-form input:focus { border-color: var(--orange); }
+.quick-form input, .quick-form select { background: #fff; border: 1px solid var(--line); color: var(--ink); font: 12px var(--body); outline: none; padding: 9px 10px; width: 100%; }
+.quick-form input:focus, .quick-form select:focus { border-color: var(--orange); }
 .quick-submit { align-items: center; background: var(--teal); border: 0; color: #fff; cursor: pointer; display: inline-flex; font-size: 11px; gap: 6px; padding: 10px 12px; white-space: nowrap; }
 .quick-submit svg { height: 14px; width: 14px; }
 .quick-form-status { color: var(--teal); font-size: 10px; }

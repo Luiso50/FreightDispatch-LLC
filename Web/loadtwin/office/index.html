@@ -142,8 +142,8 @@
       <section class="panel proposal-panel" id="proposals">
         <div class="panel-heading"><div><span class="panel-kicker">Driver offers</span><h2>Load proposals</h2></div><i data-lucide="send"></i></div>
         <form class="quick-form proposal-form" id="proposal-form">
-          <label>Load ID<input name="load_id" placeholder="L-2026-001" required></label>
-          <label>Driver ID<input name="driver_id" placeholder="DRV-..." required></label>
+          <label>Load<select name="load_id" id="proposal-load-select" required><option value="">Select load</option></select></label>
+          <label>Driver<select name="driver_id" id="proposal-driver-select" required><option value="">Select driver</option></select></label>
           <label class="proposal-message">Message<textarea name="message" rows="2" placeholder="Miami to Atlanta, Dry Van, $1,800. Do you accept?" required></textarea></label>
           <label class="checkbox-label"><input name="send_whatsapp" type="checkbox" value="true"> Send by WhatsApp</label>
           <button class="quick-submit" type="submit"><i data-lucide="send"></i> Send proposal</button>

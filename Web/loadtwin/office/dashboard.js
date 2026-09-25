@@ -93,6 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
     list.innerHTML = proposals.slice(-8).reverse().map((proposal) => `<div class="proposal-row"><div><strong>${escapeHtml(proposal.load_id)}</strong><small>${escapeHtml(proposal.message)}</small></div><div><strong>${escapeHtml(proposal.driver_id)}</strong><small>${proposal.created_at ? new Date(proposal.created_at).toLocaleString() : '--'}</small></div><span class="proposal-status">${escapeHtml(proposal.status)}</span></div>`).join('');
   };
 
+  const populateProposalOptions = (loads = [], drivers = []) => {
+    const loadSelect = document.querySelector('#proposal-load-select');
+    const driverSelect = document.querySelector('#proposal-driver-select');
+    if (loadSelect) {
+      loadSelect.innerHTML = '<option value="">Select load</option>' + loads.map((load) => `<option value="${escapeHtml(load.id)}">${escapeHtml(load.id)} · ${escapeHtml(load.origin.city)} → ${escapeHtml(load.destination.city)}</option>`).join('');
+    }
+    if (driverSelect) {
+      driverSelect.innerHTML = '<option value="">Select driver</option>' + drivers.map((driver) => `<option value="${escapeHtml(driver.id)}">${escapeHtml(driver.name)} · ${escapeHtml(driver.id)}</option>`).join('');
+    }
+  };
+
   const renderCases = (cases = []) => {
     const list = document.querySelector('#case-list');
     if (!cases.length) {
@@ -144,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setText('#load-nav-count', summary.active_loads);
       renderLoads(loads);
       renderDrivers(drivers);
+      populateProposalOptions(loads, drivers);
       renderBrokers(brokers);
       renderProposals(proposals);
       renderCases(cases);
