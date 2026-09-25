@@ -188,6 +188,20 @@ def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/integrations/whatsapp/status")
+def whatsapp_integration_status() -> dict[str, object]:
+    return {
+        "webhook_url": "/webhooks/whatsapp",
+        "verify_token_configured": bool(os.getenv("WHATSAPP_VERIFY_TOKEN")),
+        "app_secret_configured": bool(os.getenv("WHATSAPP_APP_SECRET")),
+        "access_token_configured": bool(os.getenv("WHATSAPP_ACCESS_TOKEN")),
+        "phone_number_id_configured": bool(os.getenv("WHATSAPP_PHONE_NUMBER_ID")),
+        "onboarding_autoreply_enabled": os.getenv(
+            "WHATSAPP_ONBOARDING_AUTOREPLY", "false"
+        ).casefold() == "true",
+    }
+
+
 @app.post("/drivers", response_model=Driver, status_code=201)
 def create_driver(driver: Driver) -> Driver:
     existing_driver = operations_store.find_driver_by_phone(driver.phone)

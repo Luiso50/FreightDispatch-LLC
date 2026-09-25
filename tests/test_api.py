@@ -12,6 +12,19 @@ def test_health_check():
     assert response.json() == {'status': 'ok'}
 
 
+def test_whatsapp_status_does_not_expose_secrets(monkeypatch):
+    monkeypatch.setenv('WHATSAPP_VERIFY_TOKEN', 'hidden-token')
+    monkeypatch.setenv('WHATSAPP_PHONE_NUMBER_ID', 'phone-id')
+
+    response = client.get('/integrations/whatsapp/status')
+
+    assert response.status_code == 200
+    assert response.json()['verify_token_configured'] is True
+    assert response.json()['phone_number_id_configured'] is True
+    assert 'hidden-token' not in response.text
+    assert 'phone-id' not in response.text
+
+
 def test_driver_onboarding_reports_missing_documents():
     response = client.post('/drivers', json={
         'name': 'Luis Perez',
