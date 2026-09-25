@@ -464,6 +464,15 @@ def dashboard_summary() -> DashboardSummary:
         revenue=sum(
             commission.amount for commission in operations_store.commissions.values()
         ),
+        payments_collected=sum(
+            payment.amount
+            for payment in operations_store.payment_mirrors.values()
+            if payment.status in {PaymentStatus.PAID, PaymentStatus.COMPLETED}
+        ),
+        pending_payments=sum(
+            payment.status in {PaymentStatus.PENDING, PaymentStatus.PROCESSING}
+            for payment in operations_store.payment_mirrors.values()
+        ),
         pending_commissions=sum(
             commission.status == CommissionStatus.PENDING
             for commission in operations_store.commissions.values()

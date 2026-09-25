@@ -194,6 +194,8 @@ class DashboardSummary(BaseModel):
     active_drivers: int
     active_loads: int
     revenue: Decimal = Field(ge=0)
+    payments_collected: Decimal = Field(default=Decimal("0"), ge=0)
+    pending_payments: int = 0
     pending_commissions: int
     pending_contracts: int
     missing_documents: int

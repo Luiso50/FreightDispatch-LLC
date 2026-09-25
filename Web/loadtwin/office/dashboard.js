@@ -123,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setText('#active-drivers', summary.active_drivers);
       setText('#active-loads', summary.active_loads);
       setText('#revenue', formatCurrency(summary.revenue));
+      setText('#payments-collected', formatCurrency(summary.payments_collected));
+      setText('#pending-payments', summary.pending_payments);
       setText('#pending-actions', Number(summary.pending_contracts) + Number(summary.pending_commissions));
       setText('#pending-contracts', summary.pending_contracts);
       setText('#pending-commissions', summary.pending_commissions);

@@ -208,6 +208,8 @@ def test_dashboard_summary_reports_operational_metrics():
     assert summary['active_drivers'] >= 1
     assert summary['active_loads'] >= 1
     assert 'pending_commissions' in summary
+    assert 'payments_collected' in summary
+    assert 'pending_payments' in summary
     assert 'missing_documents' in summary
     assert isinstance(summary['recent_messages'], list)
 
