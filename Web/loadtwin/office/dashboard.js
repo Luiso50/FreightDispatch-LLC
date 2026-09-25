@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const driverFormStatus = document.querySelector('#driver-form-status');
   const contractForm = document.querySelector('#contract-form');
   const contractFormStatus = document.querySelector('#contract-form-status');
+  const evidenceForm = document.querySelector('#evidence-form');
+  const evidenceFormStatus = document.querySelector('#evidence-form-status');
 
   const setText = (selector, value) => {
     const element = document.querySelector(selector);
@@ -220,6 +222,32 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadSummary();
     } catch (error) {
       contractFormStatus.textContent = 'Could not save contract';
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+  evidenceForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = evidenceForm.querySelector('button');
+    submitButton.disabled = true;
+    evidenceFormStatus.textContent = 'Saving...';
+    try {
+      const values = Object.fromEntries(new FormData(evidenceForm));
+      const response = await fetch(`${apiBaseUrl}/loads/${encodeURIComponent(values.load_id)}/evidence`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          load_id: values.load_id,
+          evidence_type: values.evidence_type,
+          description: values.description,
+          document_url: values.document_url || null,
+        }),
+      });
+      if (!response.ok) throw new Error('Evidence request failed');
+      evidenceForm.reset();
+      evidenceFormStatus.textContent = 'Evidence saved';
+    } catch (error) {
+      evidenceFormStatus.textContent = 'Could not save evidence';
     } finally {
       submitButton.disabled = false;
     }

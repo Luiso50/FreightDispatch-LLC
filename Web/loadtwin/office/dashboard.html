@@ -122,6 +122,18 @@
         </form>
         <div class="broker-list" id="broker-list"><div class="empty-state">No brokers registered.</div></div>
       </section>
+
+      <section class="panel evidence-panel" id="evidence">
+        <div class="panel-heading"><div><span class="panel-kicker">Audit trail</span><h2>Capture evidence</h2></div><i data-lucide="archive"></i></div>
+        <form class="quick-form evidence-form" id="evidence-form">
+          <label>Load ID<input name="load_id" placeholder="L-2026-001" required></label>
+          <label>Evidence type<select name="evidence_type"><option value="email">Email</option><option value="rate_confirmation">Rate confirmation</option><option value="bol">BOL</option><option value="pod">POD</option><option value="invoice">Invoice</option><option value="note">Note</option></select></label>
+          <label>Description<input name="description" placeholder="Signed rate confirmation received" required></label>
+          <label>Document URL<input name="document_url" type="url" placeholder="https://..." /></label>
+          <button class="quick-submit" type="submit"><i data-lucide="archive-plus"></i> Save evidence</button>
+          <span class="quick-form-status" id="evidence-form-status" role="status"></span>
+        </form>
+      </section>
     </main>
   </div>
 </body>

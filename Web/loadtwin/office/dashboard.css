@@ -103,6 +103,8 @@ h1 em { color: var(--orange); font-style: normal; }
 .load-form .quick-form-status { grid-column: span 1; }
 .driver-form { grid-template-columns: 1fr 1fr 1fr auto; margin-bottom: 22px; }
 .contract-form { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.evidence-panel { margin: 0 auto 22px; max-width: 1280px; }
+.evidence-form { grid-template-columns: 1fr 1.2fr 1.6fr 1.5fr auto; margin-top: 20px; }
 .broker-list { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); margin-top: 21px; }
 .broker-row { border: 1px solid var(--line); display: grid; gap: 4px; padding: 13px; }
 .broker-row strong { font: 600 13px var(--display); }
@@ -138,5 +140,5 @@ h1 em { color: var(--orange); font-style: normal; }
 .progress-track span { background: var(--orange); display: block; height: 100%; transition: width .5s ease; width: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 950px) { .app-shell { grid-template-columns: 205px minmax(0, 1fr); } .metric-grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 700px) { .app-shell { display: block; } .sidebar { min-height: 0; padding: 18px 20px; } .workspace-label, .sidebar-footer { display: none; } .side-nav { display: flex; gap: 2px; margin-top: 20px; overflow-x: auto; } .side-nav a { border-bottom: 2px solid transparent; border-left: 0; flex: 0 0 auto; padding: 8px 9px; } .side-nav a.active { border-bottom-color: var(--orange); } .side-nav a b { display: none; } .dashboard-main { padding: 36px 18px 50px; } .dashboard-header { align-items: flex-start; flex-direction: column; gap: 20px; } .content-grid, .lower-grid { grid-template-columns: 1fr; } .quick-form, .load-form, .driver-form, .contract-form { grid-template-columns: 1fr 1fr; } .quick-submit { justify-content: center; } }
+@media (max-width: 700px) { .app-shell { display: block; } .sidebar { min-height: 0; padding: 18px 20px; } .workspace-label, .sidebar-footer { display: none; } .side-nav { display: flex; gap: 2px; margin-top: 20px; overflow-x: auto; } .side-nav a { border-bottom: 2px solid transparent; border-left: 0; flex: 0 0 auto; padding: 8px 9px; } .side-nav a.active { border-bottom-color: var(--orange); } .side-nav a b { display: none; } .dashboard-main { padding: 36px 18px 50px; } .dashboard-header { align-items: flex-start; flex-direction: column; gap: 20px; } .content-grid, .lower-grid { grid-template-columns: 1fr; } .quick-form, .load-form, .driver-form, .contract-form, .evidence-form { grid-template-columns: 1fr 1fr; } .quick-submit { justify-content: center; } }
 @media (max-width: 450px) { .metric-grid { gap: 8px; } .metric-card { min-height: 155px; padding: 15px; } .metric-card strong { font-size: 27px; } .metric-card small { font-size: 9px; } .onboarding-body { gap: 16px; } .donut { height: 105px; min-width: 105px; } }
