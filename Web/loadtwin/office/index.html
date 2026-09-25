@@ -30,6 +30,7 @@
         <a href="#brokers"><i data-lucide="building-2"></i><span>Brokers</span></a>
         <a href="#proposals"><i data-lucide="send"></i><span>Proposals</span></a>
         <a href="#trulos-queue"><i data-lucide="external-link"></i><span>Trulos queue</span></a>
+        <a href="#payments"><i data-lucide="credit-card"></i><span>Payments</span></a>
         <a href="#messages"><i data-lucide="message-square-text"></i><span>Messages</span></a>
       </nav>
       <div class="sidebar-footer">
@@ -160,6 +161,19 @@
           <span class="quick-form-status" id="case-form-status" role="status"></span>
         </form>
         <div class="case-list" id="case-list"><div class="empty-state">No accepted loads waiting for Trulos.</div></div>
+      </section>
+
+      <section class="panel payment-panel" id="payments">
+        <div class="panel-heading"><div><span class="panel-kicker">Financial mirror</span><h2>Sync Trulos payment</h2></div><i data-lucide="credit-card"></i></div>
+        <form class="quick-form payment-form" id="payment-form">
+          <label>Case ID<input name="case_id" placeholder="CASE-..." required></label>
+          <label>External reference<input name="external_reference" placeholder="pi_..." required></label>
+          <label>Amount<input name="amount" type="number" min="0" step="0.01" placeholder="1800" required></label>
+          <label>Status<select name="status"><option value="paid">Paid</option><option value="pending">Pending</option><option value="failed">Failed</option><option value="refunded">Refunded</option></select></label>
+          <label>Receipt URL<input name="receipt_url" type="url" placeholder="https://..." /></label>
+          <button class="quick-submit" type="submit"><i data-lucide="refresh-cw"></i> Sync payment</button>
+          <span class="quick-form-status" id="payment-form-status" role="status"></span>
+        </form>
       </section>
     </main>
   </div>

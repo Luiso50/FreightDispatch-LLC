@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const proposalFormStatus = document.querySelector('#proposal-form-status');
   const caseForm = document.querySelector('#case-form');
   const caseFormStatus = document.querySelector('#case-form-status');
+  const paymentForm = document.querySelector('#payment-form');
+  const paymentFormStatus = document.querySelector('#payment-form-status');
 
   const setText = (selector, value) => {
     const element = document.querySelector(selector);
@@ -330,6 +332,32 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadSummary();
     } catch (error) {
       caseFormStatus.textContent = 'Could not update case';
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+  paymentForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = paymentForm.querySelector('button');
+    submitButton.disabled = true;
+    paymentFormStatus.textContent = 'Syncing...';
+    try {
+      const values = Object.fromEntries(new FormData(paymentForm));
+      const response = await fetch(`${apiBaseUrl}/booking-cases/${encodeURIComponent(values.case_id)}/payments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          external_reference: values.external_reference,
+          amount: values.amount,
+          status: values.status,
+          receipt_url: values.receipt_url || null,
+        }),
+      });
+      if (!response.ok) throw new Error('Payment sync failed');
+      paymentForm.reset();
+      paymentFormStatus.textContent = 'Payment synced';
+    } catch (error) {
+      paymentFormStatus.textContent = 'Could not sync payment';
     } finally {
       submitButton.disabled = false;
     }
