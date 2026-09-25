@@ -264,15 +264,7 @@ def respond_to_load_proposal(
     if proposal is None:
         raise HTTPException(status_code=404, detail="Proposal not found")
     if request.status == ProposalStatus.ACCEPTED:
-        load = operations_store.loads.get(proposal.load_id)
-        if load and operations_store.booking_case_for(proposal.load_id, proposal.driver_id) is None:
-            operations_store.add_booking_case(
-                BookingCase(
-                    load_id=proposal.load_id,
-                    driver_id=proposal.driver_id,
-                    agreed_rate=load.offered_rate,
-                )
-            )
+        operations_store.ensure_booking_case(proposal)
     return proposal
 
 
@@ -626,9 +618,11 @@ async def receive_whatsapp_webhook(request: Request) -> dict[str, int | str]:
         elif normalized_text in {"acepto", "aceptar", "accept"} and driver:
             proposal = operations_store.latest_proposal_for_driver(driver.id)
             if proposal:
-                operations_store.respond_to_proposal(
+                accepted_proposal = operations_store.respond_to_proposal(
                     proposal.id, ProposalStatus.ACCEPTED
                 )
+                if accepted_proposal:
+                    operations_store.ensure_booking_case(accepted_proposal)
         elif normalized_text in {"rechazo", "reject"} and driver:
             proposal = operations_store.latest_proposal_for_driver(driver.id)
             if proposal:

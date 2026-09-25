@@ -40,6 +40,8 @@ La evidencia se relaciona con un `load_id` y conserva tipo, descripción, origen
 
 Una aceptación crea un `BookingCase` en `driver_accepted`; el caso queda pendiente de tomar la orden en Trulos y conserva la referencia externa cuando esa coordinación se complete.
 
+La aceptación desde la oficina y la aceptación por WhatsApp usan la misma transición, evitando expedientes divergentes.
+
 `POST /booking-cases/{case_id}/trulos-order` registra la referencia externa y avanza el caso a `ordered` después de que el operador tome la orden en Trulos.
 
 `POST /booking-cases/{case_id}/status` permite seguir el caso en `in_transit` o `completed` sin modificar la orden dentro de Trulos.

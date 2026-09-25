@@ -222,6 +222,21 @@ class OperationsStore:
     def list_booking_cases(self) -> list[BookingCase]:
         return list(self.booking_cases.values())
 
+    def ensure_booking_case(self, proposal: LoadProposal) -> BookingCase | None:
+        existing_case = self.booking_case_for(proposal.load_id, proposal.driver_id)
+        if existing_case:
+            return existing_case
+        load = self.loads.get(proposal.load_id)
+        if load is None:
+            return None
+        return self.add_booking_case(
+            BookingCase(
+                load_id=proposal.load_id,
+                driver_id=proposal.driver_id,
+                agreed_rate=load.offered_rate,
+            )
+        )
+
     def mark_booking_case_ordered(
         self, case_id: str, external_order_id: str
     ) -> BookingCase | None:

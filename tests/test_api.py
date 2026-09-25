@@ -270,6 +270,38 @@ def test_driver_can_accept_proposal_via_response_endpoint():
     assert cases.json()[0]['agreed_rate'] is None
 
 
+def test_whatsapp_acceptance_creates_booking_case():
+    driver = client.post('/drivers', json={
+        'name': 'WhatsApp Acceptance Driver',
+        'phone': '+17860000011',
+    }).json()
+    client.post('/loads', json={
+        'id': 'L-WA-ACCEPT-001',
+        'origin': {'city': 'Miami', 'state': 'FL'},
+        'destination': {'city': 'Orlando', 'state': 'FL'},
+        'equipment_type': 'Dry Van',
+        'offered_rate': '1500.00',
+        'status': 'available',
+    })
+    proposal = client.post('/proposals', json={
+        'load_id': 'L-WA-ACCEPT-001',
+        'driver_id': driver['id'],
+        'message': 'Miami to Orlando. Do you accept?',
+    }).json()
+
+    response = client.post('/webhooks/whatsapp', json={
+        'entry': [{'changes': [{'value': {'messages': [{
+            'id': 'wamid.accept-booking-case',
+            'from': driver['phone'],
+            'text': {'body': 'ACEPTO'},
+        }]}}]}]
+    })
+
+    assert response.status_code == 200
+    cases = client.get('/booking-cases').json()
+    assert any(case['load_id'] == proposal['load_id'] for case in cases)
+
+
 def test_booking_case_can_record_trulos_order_reference():
     case = client.get('/booking-cases').json()[0]
 
