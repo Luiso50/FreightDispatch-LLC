@@ -22,6 +22,7 @@ from src.agent.request_parser import parse_load_request
 from src.database.models import (
     Broker,
     BookingCase,
+    BookingCaseStatus,
     Carrier,
     Commission,
     CommissionStatus,
@@ -128,6 +129,10 @@ class PaymentMirrorRequest(BaseModel):
     status: PaymentStatus = PaymentStatus.PENDING
     receipt_url: str | None = None
     paid_at: datetime | None = None
+
+
+class TrulosOrderRequest(BaseModel):
+    external_order_id: str
 
 
 @asynccontextmanager
@@ -255,6 +260,18 @@ def respond_to_load_proposal(
 @app.get("/booking-cases", response_model=list[BookingCase])
 def list_booking_cases() -> list[BookingCase]:
     return operations_store.list_booking_cases()
+
+
+@app.post("/booking-cases/{case_id}/trulos-order", response_model=BookingCase)
+def mark_case_ordered(case_id: str, request: TrulosOrderRequest) -> BookingCase:
+    case = operations_store.booking_cases.get(case_id)
+    if case is None:
+        raise HTTPException(status_code=404, detail="Booking case not found")
+    if case.status == BookingCaseStatus.COMPLETED:
+        raise HTTPException(status_code=409, detail="Completed case cannot be reordered")
+    return operations_store.mark_booking_case_ordered(
+        case_id, request.external_order_id
+    )
 
 
 @app.post("/booking-cases/{case_id}/payments", response_model=PaymentMirror, status_code=201)

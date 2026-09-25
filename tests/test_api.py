@@ -255,6 +255,18 @@ def test_driver_can_accept_proposal_via_response_endpoint():
     assert cases.json()[0]['agreed_rate'] is None
 
 
+def test_booking_case_can_record_trulos_order_reference():
+    case = client.get('/booking-cases').json()[0]
+
+    response = client.post(f"/booking-cases/{case['id']}/trulos-order", json={
+        'external_order_id': 'TRULOS-ORDER-001',
+    })
+
+    assert response.status_code == 200
+    assert response.json()['status'] == 'ordered'
+    assert response.json()['external_order_id'] == 'TRULOS-ORDER-001'
+
+
 def test_trulos_payment_can_be_mirrored_on_booking_case():
     case = client.get('/booking-cases').json()[0]
 

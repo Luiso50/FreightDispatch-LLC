@@ -1,6 +1,7 @@
 from src.database.models import (
     Broker,
     BookingCase,
+    BookingCaseStatus,
     Commission,
     Contract,
     DocumentType,
@@ -220,6 +221,21 @@ class OperationsStore:
 
     def list_booking_cases(self) -> list[BookingCase]:
         return list(self.booking_cases.values())
+
+    def mark_booking_case_ordered(
+        self, case_id: str, external_order_id: str
+    ) -> BookingCase | None:
+        case = self.booking_cases.get(case_id)
+        if case is None:
+            return None
+        updated_case = case.model_copy(
+            update={
+                "status": BookingCaseStatus.ORDERED,
+                "external_order_id": external_order_id,
+            }
+        )
+        self.booking_cases[case_id] = updated_case
+        return updated_case
 
     def add_payment_mirror(self, payment: PaymentMirror) -> PaymentMirror:
         self.payment_mirrors[payment.id] = payment
