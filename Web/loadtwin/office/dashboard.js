@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const contractFormStatus = document.querySelector('#contract-form-status');
   const evidenceForm = document.querySelector('#evidence-form');
   const evidenceFormStatus = document.querySelector('#evidence-form-status');
+  const proposalForm = document.querySelector('#proposal-form');
+  const proposalFormStatus = document.querySelector('#proposal-form-status');
 
   const setText = (selector, value) => {
     const element = document.querySelector(selector);
@@ -77,20 +79,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
   };
 
+  const renderProposals = (proposals = []) => {
+    const list = document.querySelector('#proposal-list');
+    if (!proposals.length) {
+      list.innerHTML = '<div class="empty-state">No proposals sent.</div>';
+      return;
+    }
+    list.innerHTML = proposals.slice(-8).reverse().map((proposal) => `<div class="proposal-row"><div><strong>${escapeHtml(proposal.load_id)}</strong><small>${escapeHtml(proposal.message)}</small></div><div><strong>${escapeHtml(proposal.driver_id)}</strong><small>${proposal.created_at ? new Date(proposal.created_at).toLocaleString() : '--'}</small></div><span class="proposal-status">${escapeHtml(proposal.status)}</span></div>`).join('');
+  };
+
   const loadSummary = async () => {
     refreshButton.classList.add('loading');
     errorBanner.hidden = true;
     try {
-      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse, brokersResponse] = await Promise.all([
+      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse, brokersResponse, proposalsResponse] = await Promise.all([
         fetch(`${apiBaseUrl}/dashboard/summary`),
         fetch(`${apiBaseUrl}/loads`),
         fetch(`${apiBaseUrl}/contracts/renewals?days=30`),
         fetch(`${apiBaseUrl}/drivers`),
         fetch(`${apiBaseUrl}/brokers`),
+        fetch(`${apiBaseUrl}/proposals`),
       ]);
-      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok || !brokersResponse.ok) throw new Error('Dashboard request failed');
-      const [summary, loads, renewals, drivers, brokers] = await Promise.all([
-        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(), brokersResponse.json(),
+      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok || !brokersResponse.ok || !proposalsResponse.ok) throw new Error('Dashboard request failed');
+      const [summary, loads, renewals, drivers, brokers, proposals] = await Promise.all([
+        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(), brokersResponse.json(), proposalsResponse.json(),
       ]);
       setText('#active-drivers', summary.active_drivers);
       setText('#active-loads', summary.active_loads);
@@ -105,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderLoads(loads);
       renderDrivers(drivers);
       renderBrokers(brokers);
+      renderProposals(proposals);
       document.querySelector('#contract-progress').style.width = `${summary.pending_contracts ? 72 : 100}%`;
       renderMessages(summary.recent_messages);
       connectionLabel.textContent = 'Connected to API';
@@ -248,6 +261,33 @@ document.addEventListener('DOMContentLoaded', () => {
       evidenceFormStatus.textContent = 'Evidence saved';
     } catch (error) {
       evidenceFormStatus.textContent = 'Could not save evidence';
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+  proposalForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = proposalForm.querySelector('button');
+    submitButton.disabled = true;
+    proposalFormStatus.textContent = 'Sending...';
+    try {
+      const values = Object.fromEntries(new FormData(proposalForm));
+      const response = await fetch(`${apiBaseUrl}/proposals`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          load_id: values.load_id,
+          driver_id: values.driver_id,
+          message: values.message,
+          send_whatsapp: values.send_whatsapp === 'true',
+        }),
+      });
+      if (!response.ok) throw new Error('Proposal request failed');
+      proposalForm.reset();
+      proposalFormStatus.textContent = 'Proposal sent';
+      await loadSummary();
+    } catch (error) {
+      proposalFormStatus.textContent = 'Could not send proposal';
     } finally {
       submitButton.disabled = false;
     }

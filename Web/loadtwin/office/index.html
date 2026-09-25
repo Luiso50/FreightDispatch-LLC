@@ -28,6 +28,7 @@
         <a href="#drivers"><i data-lucide="truck"></i><span>Drivers</span></a>
         <a href="#contracts"><i data-lucide="file-signature"></i><span>Contracts</span></a>
         <a href="#brokers"><i data-lucide="building-2"></i><span>Brokers</span></a>
+        <a href="#proposals"><i data-lucide="send"></i><span>Proposals</span></a>
         <a href="#messages"><i data-lucide="message-square-text"></i><span>Messages</span></a>
       </nav>
       <div class="sidebar-footer">
@@ -133,6 +134,19 @@
           <button class="quick-submit" type="submit"><i data-lucide="archive-plus"></i> Save evidence</button>
           <span class="quick-form-status" id="evidence-form-status" role="status"></span>
         </form>
+      </section>
+
+      <section class="panel proposal-panel" id="proposals">
+        <div class="panel-heading"><div><span class="panel-kicker">Driver offers</span><h2>Load proposals</h2></div><i data-lucide="send"></i></div>
+        <form class="quick-form proposal-form" id="proposal-form">
+          <label>Load ID<input name="load_id" placeholder="L-2026-001" required></label>
+          <label>Driver ID<input name="driver_id" placeholder="DRV-..." required></label>
+          <label class="proposal-message">Message<textarea name="message" rows="2" placeholder="Miami to Atlanta, Dry Van, $1,800. Do you accept?" required></textarea></label>
+          <label class="checkbox-label"><input name="send_whatsapp" type="checkbox" value="true"> Send by WhatsApp</label>
+          <button class="quick-submit" type="submit"><i data-lucide="send"></i> Send proposal</button>
+          <span class="quick-form-status" id="proposal-form-status" role="status"></span>
+        </form>
+        <div class="proposal-list" id="proposal-list"><div class="empty-state">No proposals sent.</div></div>
       </section>
     </main>
   </div>
