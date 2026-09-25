@@ -308,6 +308,13 @@ def test_trulos_payment_can_be_mirrored_on_booking_case():
     assert response.json()['source'] == 'trulos'
     assert client.get(f"/booking-cases/{case['id']}/payments").json()[0]['status'] == 'paid'
     assert client.get('/payments').json()[0]['external_reference'] == 'pi_trulos_001'
+    duplicate = client.post(f"/booking-cases/{case['id']}/payments", json={
+        'external_reference': 'pi_trulos_001',
+        'amount': '1800.00',
+        'status': 'paid',
+    })
+    assert duplicate.status_code == 201
+    assert len(client.get(f"/booking-cases/{case['id']}/payments").json()) == 1
 
 
 def test_contract_can_be_accepted():

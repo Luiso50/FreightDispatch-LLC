@@ -46,6 +46,8 @@ Una aceptación crea un `BookingCase` en `driver_accepted`; el caso queda pendie
 
 Los endpoints `/booking-cases/{case_id}/payments` reflejan estados y comprobantes procesados por Trulos/Stripe; LoadTwin no cobra ni almacena credenciales de Stripe.
 
+La referencia externa del pago es idempotente por booking case: reintentar la misma sincronización no crea un duplicado.
+
 ## Roadmap
 
 1. **Fase 1:** drivers, onboarding documental, contratos, cargas y evidencia; completar repositorios y casos de uso.

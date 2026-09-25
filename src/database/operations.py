@@ -256,6 +256,17 @@ class OperationsStore:
         return updated_case
 
     def add_payment_mirror(self, payment: PaymentMirror) -> PaymentMirror:
+        existing_payment = next(
+            (
+                existing
+                for existing in self.payment_mirrors.values()
+                if existing.booking_case_id == payment.booking_case_id
+                and existing.external_reference == payment.external_reference
+            ),
+            None,
+        )
+        if existing_payment:
+            return existing_payment
         self.payment_mirrors[payment.id] = payment
         return payment
 
