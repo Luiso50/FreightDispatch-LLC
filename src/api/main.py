@@ -321,6 +321,11 @@ def list_payment_mirrors(case_id: str) -> list[PaymentMirror]:
     return operations_store.payments_for_case(case_id)
 
 
+@app.get("/payments", response_model=list[PaymentMirror])
+def list_all_payment_mirrors() -> list[PaymentMirror]:
+    return list(operations_store.payment_mirrors.values())
+
+
 @app.post("/drivers/{driver_id}/documents", response_model=DriverDocument, status_code=201)
 def add_driver_document(driver_id: str, document: DriverDocument) -> DriverDocument:
     if driver_id not in operations_store.drivers:

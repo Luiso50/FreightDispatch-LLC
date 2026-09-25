@@ -102,11 +102,20 @@ document.addEventListener('DOMContentLoaded', () => {
     list.innerHTML = cases.slice(-8).reverse().map((bookingCase) => `<div class="case-row"><div><strong>${escapeHtml(bookingCase.load_id)}</strong><small>Driver ${escapeHtml(bookingCase.driver_id)}</small></div><div><strong>${bookingCase.agreed_rate ? formatCurrency(bookingCase.agreed_rate) : 'Rate pending'}</strong><small>${escapeHtml(bookingCase.external_order_id || 'External order pending')}</small></div><span class="case-status">${escapeHtml(bookingCase.status.replace('_', ' '))}</span></div>`).join('');
   };
 
+  const renderPayments = (payments = []) => {
+    const list = document.querySelector('#payment-list');
+    if (!payments.length) {
+      list.innerHTML = '<div class="empty-state">No payments synced.</div>';
+      return;
+    }
+    list.innerHTML = payments.slice(-8).reverse().map((payment) => `<div class="payment-row"><div><strong>${escapeHtml(payment.external_reference)}</strong><small>${escapeHtml(payment.booking_case_id)} · ${escapeHtml(payment.source)}</small></div><div><strong>${formatCurrency(payment.amount)}</strong><small>${payment.paid_at ? new Date(payment.paid_at).toLocaleDateString() : 'Date pending'}</small></div><span class="payment-status">${escapeHtml(payment.status)}</span></div>`).join('');
+  };
+
   const loadSummary = async () => {
     refreshButton.classList.add('loading');
     errorBanner.hidden = true;
     try {
-      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse, brokersResponse, proposalsResponse, casesResponse, whatsappResponse] = await Promise.all([
+      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse, brokersResponse, proposalsResponse, casesResponse, whatsappResponse, paymentsResponse] = await Promise.all([
         fetch(`${apiBaseUrl}/dashboard/summary`),
         fetch(`${apiBaseUrl}/loads`),
         fetch(`${apiBaseUrl}/contracts/renewals?days=30`),
@@ -115,10 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`${apiBaseUrl}/proposals`),
         fetch(`${apiBaseUrl}/booking-cases`),
         fetch(`${apiBaseUrl}/integrations/whatsapp/status`),
+        fetch(`${apiBaseUrl}/payments`),
       ]);
-      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok || !brokersResponse.ok || !proposalsResponse.ok || !casesResponse.ok || !whatsappResponse.ok) throw new Error('Dashboard request failed');
-      const [summary, loads, renewals, drivers, brokers, proposals, cases, whatsapp] = await Promise.all([
-        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(), brokersResponse.json(), proposalsResponse.json(), casesResponse.json(), whatsappResponse.json(),
+      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok || !brokersResponse.ok || !proposalsResponse.ok || !casesResponse.ok || !whatsappResponse.ok || !paymentsResponse.ok) throw new Error('Dashboard request failed');
+      const [summary, loads, renewals, drivers, brokers, proposals, cases, whatsapp, payments] = await Promise.all([
+        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(), brokersResponse.json(), proposalsResponse.json(), casesResponse.json(), whatsappResponse.json(), paymentsResponse.json(),
       ]);
       setText('#active-drivers', summary.active_drivers);
       setText('#active-loads', summary.active_loads);
@@ -137,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderBrokers(brokers);
       renderProposals(proposals);
       renderCases(cases);
+      renderPayments(payments);
       const whatsappReady = whatsapp.verify_token_configured && whatsapp.app_secret_configured && whatsapp.access_token_configured && whatsapp.phone_number_id_configured;
       whatsappStatus.textContent = `WhatsApp: ${whatsappReady ? 'ready' : 'configuration pending'}`;
       document.querySelector('#contract-progress').style.width = `${summary.pending_contracts ? 72 : 100}%`;

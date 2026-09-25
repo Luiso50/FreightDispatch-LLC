@@ -307,6 +307,7 @@ def test_trulos_payment_can_be_mirrored_on_booking_case():
     assert response.status_code == 201
     assert response.json()['source'] == 'trulos'
     assert client.get(f"/booking-cases/{case['id']}/payments").json()[0]['status'] == 'paid'
+    assert client.get('/payments').json()[0]['external_reference'] == 'pi_trulos_001'
 
 
 def test_contract_can_be_accepted():
