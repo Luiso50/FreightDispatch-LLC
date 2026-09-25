@@ -40,6 +40,8 @@ La evidencia se relaciona con un `load_id` y conserva tipo, descripción, origen
 
 Una aceptación crea un `BookingCase` en `driver_accepted`; el caso queda pendiente de tomar la orden en Trulos y conserva la referencia externa cuando esa coordinación se complete.
 
+Los endpoints `/booking-cases/{case_id}/payments` reflejan estados y comprobantes procesados por Trulos/Stripe; LoadTwin no cobra ni almacena credenciales de Stripe.
+
 ## Roadmap
 
 1. **Fase 1:** drivers, onboarding documental, contratos, cargas y evidencia; completar repositorios y casos de uso.

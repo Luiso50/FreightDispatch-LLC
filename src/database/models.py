@@ -43,6 +43,7 @@ class PaymentStatus(StrEnum):
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
+    PAID = "paid"
     FAILED = "failed"
     REFUNDED = "refunded"
 
@@ -232,6 +233,18 @@ class BookingCase(BaseModel):
     status: BookingCaseStatus = BookingCaseStatus.DRIVER_ACCEPTED
     external_order_id: Optional[str] = None
     created_at: datetime = Field(default_factory=utc_now)
+
+
+class PaymentMirror(BaseModel):
+    id: str = Field(default_factory=lambda: f"PAY-{uuid4().hex[:10].upper()}")
+    booking_case_id: str
+    external_reference: str
+    amount: Decimal = Field(ge=0)
+    status: PaymentStatus = PaymentStatus.PENDING
+    receipt_url: Optional[str] = None
+    paid_at: Optional[datetime] = None
+    source: str = "trulos"
+    synced_at: datetime = Field(default_factory=utc_now)
 
 
 class Broker(BaseModel):

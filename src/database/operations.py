@@ -15,6 +15,7 @@ from src.database.models import (
     OnboardingCase,
     OnboardingDocument,
     OnboardingStatus,
+    PaymentMirror,
     utc_now,
 )
 
@@ -34,6 +35,7 @@ class OperationsStore:
         self.loads: dict[str, Load] = {}
         self.proposals: dict[str, LoadProposal] = {}
         self.booking_cases: dict[str, BookingCase] = {}
+        self.payment_mirrors: dict[str, PaymentMirror] = {}
 
     def add_driver(self, driver: Driver) -> Driver:
         self.drivers[driver.id] = driver
@@ -218,3 +220,14 @@ class OperationsStore:
 
     def list_booking_cases(self) -> list[BookingCase]:
         return list(self.booking_cases.values())
+
+    def add_payment_mirror(self, payment: PaymentMirror) -> PaymentMirror:
+        self.payment_mirrors[payment.id] = payment
+        return payment
+
+    def payments_for_case(self, booking_case_id: str) -> list[PaymentMirror]:
+        return [
+            payment
+            for payment in self.payment_mirrors.values()
+            if payment.booking_case_id == booking_case_id
+        ]

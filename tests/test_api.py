@@ -255,6 +255,21 @@ def test_driver_can_accept_proposal_via_response_endpoint():
     assert cases.json()[0]['agreed_rate'] is None
 
 
+def test_trulos_payment_can_be_mirrored_on_booking_case():
+    case = client.get('/booking-cases').json()[0]
+
+    response = client.post(f"/booking-cases/{case['id']}/payments", json={
+        'external_reference': 'pi_trulos_001',
+        'amount': '1800.00',
+        'status': 'paid',
+        'receipt_url': 'https://files.example.test/receipt.pdf',
+    })
+
+    assert response.status_code == 201
+    assert response.json()['source'] == 'trulos'
+    assert client.get(f"/booking-cases/{case['id']}/payments").json()[0]['status'] == 'paid'
+
+
 def test_contract_can_be_accepted():
     contract = client.post('/contracts', json={
         'id': 'CON-9001',

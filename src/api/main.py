@@ -6,7 +6,7 @@ import logging
 import os
 
 from contextlib import asynccontextmanager
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -40,6 +40,8 @@ from src.database.models import (
     Message,
     OnboardingCase,
     OnboardingDocument,
+    PaymentMirror,
+    PaymentStatus,
     ProposalStatus,
     utc_now,
 )
@@ -118,6 +120,14 @@ class ProposalRequest(BaseModel):
 
 class ProposalResponseRequest(BaseModel):
     status: ProposalStatus
+
+
+class PaymentMirrorRequest(BaseModel):
+    external_reference: str
+    amount: Decimal = Field(ge=0)
+    status: PaymentStatus = PaymentStatus.PENDING
+    receipt_url: str | None = None
+    paid_at: datetime | None = None
 
 
 @asynccontextmanager
@@ -245,6 +255,22 @@ def respond_to_load_proposal(
 @app.get("/booking-cases", response_model=list[BookingCase])
 def list_booking_cases() -> list[BookingCase]:
     return operations_store.list_booking_cases()
+
+
+@app.post("/booking-cases/{case_id}/payments", response_model=PaymentMirror, status_code=201)
+def add_payment_mirror(case_id: str, request: PaymentMirrorRequest) -> PaymentMirror:
+    if case_id not in operations_store.booking_cases:
+        raise HTTPException(status_code=404, detail="Booking case not found")
+    return operations_store.add_payment_mirror(
+        PaymentMirror(booking_case_id=case_id, **request.model_dump())
+    )
+
+
+@app.get("/booking-cases/{case_id}/payments", response_model=list[PaymentMirror])
+def list_payment_mirrors(case_id: str) -> list[PaymentMirror]:
+    if case_id not in operations_store.booking_cases:
+        raise HTTPException(status_code=404, detail="Booking case not found")
+    return operations_store.payments_for_case(case_id)
 
 
 @app.post("/drivers/{driver_id}/documents", response_model=DriverDocument, status_code=201)
