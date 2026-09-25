@@ -9,6 +9,7 @@ from src.database.models import (
     EvidenceEvent,
     Load,
     LoadProposal,
+    ProposalStatus,
     Message,
     OnboardingCase,
     OnboardingDocument,
@@ -175,3 +176,26 @@ class OperationsStore:
 
     def list_proposals(self) -> list[LoadProposal]:
         return list(self.proposals.values())
+    
+    def latest_proposal_for_driver(self, driver_id: str) -> LoadProposal | None:
+        proposals = [
+            proposal
+            for proposal in self.proposals.values()
+            if proposal.driver_id == driver_id and proposal.status == ProposalStatus.SENT
+        ]
+        return max(proposals, key=lambda proposal: proposal.created_at) if proposals else None
+
+    def respond_to_proposal(
+        self, proposal_id: str, status: ProposalStatus
+    ) -> LoadProposal | None:
+        proposal = self.proposals.get(proposal_id)
+        if proposal is None:
+            return None
+        updated_proposal = proposal.model_copy(
+            update={
+                "status": status,
+                "responded_at": utc_now(),
+            }
+        )
+        self.proposals[proposal_id] = updated_proposal
+        return updated_proposal

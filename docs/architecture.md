@@ -36,6 +36,8 @@ La evidencia se relaciona con un `load_id` y conserva tipo, descripción, origen
 
 `POST /proposals` registra la propuesta enviada a un driver; `send_whatsapp` permite el envío explícito. La orden oficial continúa tomándose en Trulos después de la aceptación.
 
+`POST /proposals/{proposal_id}/respond` registra aceptación o rechazo. Las respuestas `ACEPTO`, `ACEPTAR` y `RECHAZO` por WhatsApp actualizan la propuesta pendiente del driver registrado.
+
 ## Roadmap
 
 1. **Fase 1:** drivers, onboarding documental, contratos, cargas y evidencia; completar repositorios y casos de uso.

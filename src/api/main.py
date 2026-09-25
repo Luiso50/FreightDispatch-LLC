@@ -39,6 +39,7 @@ from src.database.models import (
     Message,
     OnboardingCase,
     OnboardingDocument,
+    ProposalStatus,
     utc_now,
 )
 from src.database.operations import OperationsStore
@@ -112,6 +113,10 @@ class ProposalRequest(BaseModel):
     driver_id: str
     message: str
     send_whatsapp: bool = False
+
+
+class ProposalResponseRequest(BaseModel):
+    status: ProposalStatus
 
 
 @asynccontextmanager
@@ -209,6 +214,21 @@ def create_load_proposal(request: ProposalRequest) -> LoadProposal:
 @app.get("/proposals", response_model=list[LoadProposal])
 def list_load_proposals() -> list[LoadProposal]:
     return operations_store.list_proposals()
+
+
+@app.post("/proposals/{proposal_id}/respond", response_model=LoadProposal)
+def respond_to_load_proposal(
+    proposal_id: str, request: ProposalResponseRequest
+) -> LoadProposal:
+    if request.status not in {ProposalStatus.ACCEPTED, ProposalStatus.REJECTED}:
+        raise HTTPException(
+            status_code=400,
+            detail="Proposal response must be accepted or rejected",
+        )
+    proposal = operations_store.respond_to_proposal(proposal_id, request.status)
+    if proposal is None:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+    return proposal
 
 
 @app.post("/drivers/{driver_id}/documents", response_model=DriverDocument, status_code=201)
@@ -490,6 +510,18 @@ async def receive_whatsapp_webhook(request: Request) -> dict[str, int | str]:
             approval_store.resolve_latest_pending_for_phone(
                 message.sender, ApprovalStatus.REJECTED
             )
+        elif normalized_text in {"acepto", "aceptar", "accept"} and driver:
+            proposal = operations_store.latest_proposal_for_driver(driver.id)
+            if proposal:
+                operations_store.respond_to_proposal(
+                    proposal.id, ProposalStatus.ACCEPTED
+                )
+        elif normalized_text in {"rechazo", "reject"} and driver:
+            proposal = operations_store.latest_proposal_for_driver(driver.id)
+            if proposal:
+                operations_store.respond_to_proposal(
+                    proposal.id, ProposalStatus.REJECTED
+                )
 
     return {"status": "received", "messages": len(messages)}
 

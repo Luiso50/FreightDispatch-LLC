@@ -224,6 +224,33 @@ def test_load_proposal_is_recorded_for_existing_driver_and_load():
     assert client.get('/proposals').json()[0]['driver_id'] == driver['id']
 
 
+def test_driver_can_accept_proposal_via_response_endpoint():
+    driver = client.post('/drivers', json={
+        'name': 'Response Driver',
+        'phone': '+17860000009',
+    }).json()
+    client.post('/loads', json={
+        'id': 'L-RESPONSE-001',
+        'origin': {'city': 'Tampa', 'state': 'FL'},
+        'destination': {'city': 'Orlando', 'state': 'FL'},
+        'equipment_type': 'Reefer',
+        'status': 'available',
+    })
+    proposal = client.post('/proposals', json={
+        'load_id': 'L-RESPONSE-001',
+        'driver_id': driver['id'],
+        'message': 'Tampa to Orlando, Reefer. Do you accept?',
+    }).json()
+
+    response = client.post(f"/proposals/{proposal['id']}/respond", json={
+        'status': 'accepted',
+    })
+
+    assert response.status_code == 200
+    assert response.json()['status'] == 'accepted'
+    assert response.json()['responded_at'] is not None
+
+
 def test_contract_can_be_accepted():
     contract = client.post('/contracts', json={
         'id': 'CON-9001',
