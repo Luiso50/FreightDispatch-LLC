@@ -294,6 +294,34 @@ def test_booking_case_status_can_advance_after_trulos_order():
     assert response.json()['external_order_id'] == 'TRULOS-ORDER-001'
 
 
+def test_booking_case_cannot_be_ordered_without_trulos_reference():
+    driver = client.post('/drivers', json={
+        'name': 'Order Guard Driver',
+        'phone': '+17860000010',
+    }).json()
+    client.post('/loads', json={
+        'id': 'L-ORDER-GUARD-001',
+        'origin': {'city': 'Orlando', 'state': 'FL'},
+        'destination': {'city': 'Jacksonville', 'state': 'FL'},
+        'equipment_type': 'Dry Van',
+        'status': 'available',
+    })
+    proposal = client.post('/proposals', json={
+        'load_id': 'L-ORDER-GUARD-001',
+        'driver_id': driver['id'],
+        'message': 'Orlando to Jacksonville. Do you accept?',
+    }).json()
+    client.post(f"/proposals/{proposal['id']}/respond", json={'status': 'accepted'})
+    case = client.get('/booking-cases').json()[-1]
+
+    response = client.post(f"/booking-cases/{case['id']}/status", json={
+        'status': 'ordered',
+        'external_order_id': None,
+    })
+
+    assert response.status_code == 422
+
+
 def test_trulos_payment_can_be_mirrored_on_booking_case():
     case = client.get('/booking-cases').json()[0]
 

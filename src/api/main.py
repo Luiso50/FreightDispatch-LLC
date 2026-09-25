@@ -297,11 +297,20 @@ def mark_case_ordered(case_id: str, request: TrulosOrderRequest) -> BookingCase:
 def update_case_status(
     case_id: str, request: BookingCaseStatusRequest
 ) -> BookingCase:
+    case = operations_store.booking_cases.get(case_id)
+    if case is None:
+        raise HTTPException(status_code=404, detail="Booking case not found")
+    if (
+        request.status == BookingCaseStatus.ORDERED
+        and not (request.external_order_id or case.external_order_id)
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="external_order_id is required when status is ordered",
+        )
     updated_case = operations_store.update_booking_case_status(
         case_id, request.status, request.external_order_id
     )
-    if updated_case is None:
-        raise HTTPException(status_code=404, detail="Booking case not found")
     return updated_case
 
 
