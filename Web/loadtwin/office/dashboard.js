@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadFormStatus = document.querySelector('#load-form-status');
   const driverForm = document.querySelector('#driver-form');
   const driverFormStatus = document.querySelector('#driver-form-status');
+  const contractForm = document.querySelector('#contract-form');
+  const contractFormStatus = document.querySelector('#contract-form-status');
 
   const setText = (selector, value) => {
     const element = document.querySelector(selector);
@@ -188,6 +190,36 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadSummary();
     } catch (error) {
       driverFormStatus.textContent = 'Could not save driver';
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+  contractForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = contractForm.querySelector('button');
+    submitButton.disabled = true;
+    contractFormStatus.textContent = 'Saving...';
+    try {
+      const values = Object.fromEntries(new FormData(contractForm));
+      const payload = {
+        trip_id: values.trip_id,
+        contract_number: values.contract_number,
+        customer_name: values.customer_name,
+        carrier_name: values.carrier_name,
+        agreed_rate: values.agreed_rate,
+        renewal_date: values.renewal_date || null,
+      };
+      const response = await fetch(`${apiBaseUrl}/contracts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error('Contract request failed');
+      contractForm.reset();
+      contractFormStatus.textContent = 'Contract added';
+      await loadSummary();
+    } catch (error) {
+      contractFormStatus.textContent = 'Could not save contract';
     } finally {
       submitButton.disabled = false;
     }

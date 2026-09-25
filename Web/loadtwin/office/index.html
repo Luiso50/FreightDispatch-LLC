@@ -95,6 +95,16 @@
         </article>
         <article class="panel contracts-panel" id="contracts">
           <div class="panel-heading"><div><span class="panel-kicker">Legal queue</span><h2>Contracts</h2></div><i data-lucide="file-check-2"></i></div>
+          <form class="quick-form contract-form" id="contract-form">
+            <label>Contract number<input name="contract_number" placeholder="FD-2026-001" required></label>
+            <label>Trip ID<input name="trip_id" placeholder="TRIP-001" required></label>
+            <label>Customer<input name="customer_name" placeholder="Broker name" required></label>
+            <label>Carrier<input name="carrier_name" placeholder="Carrier name" required></label>
+            <label>Agreed rate<input name="agreed_rate" type="number" min="0" step="0.01" placeholder="2200" required></label>
+            <label>Renewal date<input name="renewal_date" type="date"></label>
+            <button class="quick-submit" type="submit"><i data-lucide="plus"></i> Add contract</button>
+            <span class="quick-form-status" id="contract-form-status" role="status"></span>
+          </form>
           <div class="contract-stat"><strong id="contract-count">--</strong><span>pending signatures</span></div>
           <div class="progress-track"><span id="contract-progress"></span></div>
           <p class="panel-note"><span id="renewal-count">0</span> renewals in the next 30 days. Accepted contracts stay attached to the operational record.</p>
