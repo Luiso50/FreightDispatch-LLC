@@ -88,21 +88,31 @@ document.addEventListener('DOMContentLoaded', () => {
     list.innerHTML = proposals.slice(-8).reverse().map((proposal) => `<div class="proposal-row"><div><strong>${escapeHtml(proposal.load_id)}</strong><small>${escapeHtml(proposal.message)}</small></div><div><strong>${escapeHtml(proposal.driver_id)}</strong><small>${proposal.created_at ? new Date(proposal.created_at).toLocaleString() : '--'}</small></div><span class="proposal-status">${escapeHtml(proposal.status)}</span></div>`).join('');
   };
 
+  const renderCases = (cases = []) => {
+    const list = document.querySelector('#case-list');
+    if (!cases.length) {
+      list.innerHTML = '<div class="empty-state">No accepted loads waiting for Trulos.</div>';
+      return;
+    }
+    list.innerHTML = cases.slice(-8).reverse().map((bookingCase) => `<div class="case-row"><div><strong>${escapeHtml(bookingCase.load_id)}</strong><small>Driver ${escapeHtml(bookingCase.driver_id)}</small></div><div><strong>${bookingCase.agreed_rate ? formatCurrency(bookingCase.agreed_rate) : 'Rate pending'}</strong><small>${escapeHtml(bookingCase.external_order_id || 'External order pending')}</small></div><span class="case-status">${escapeHtml(bookingCase.status.replace('_', ' '))}</span></div>`).join('');
+  };
+
   const loadSummary = async () => {
     refreshButton.classList.add('loading');
     errorBanner.hidden = true;
     try {
-      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse, brokersResponse, proposalsResponse] = await Promise.all([
+      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse, brokersResponse, proposalsResponse, casesResponse] = await Promise.all([
         fetch(`${apiBaseUrl}/dashboard/summary`),
         fetch(`${apiBaseUrl}/loads`),
         fetch(`${apiBaseUrl}/contracts/renewals?days=30`),
         fetch(`${apiBaseUrl}/drivers`),
         fetch(`${apiBaseUrl}/brokers`),
         fetch(`${apiBaseUrl}/proposals`),
+        fetch(`${apiBaseUrl}/booking-cases`),
       ]);
-      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok || !brokersResponse.ok || !proposalsResponse.ok) throw new Error('Dashboard request failed');
-      const [summary, loads, renewals, drivers, brokers, proposals] = await Promise.all([
-        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(), brokersResponse.json(), proposalsResponse.json(),
+      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok || !brokersResponse.ok || !proposalsResponse.ok || !casesResponse.ok) throw new Error('Dashboard request failed');
+      const [summary, loads, renewals, drivers, brokers, proposals, cases] = await Promise.all([
+        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(), brokersResponse.json(), proposalsResponse.json(), casesResponse.json(),
       ]);
       setText('#active-drivers', summary.active_drivers);
       setText('#active-loads', summary.active_loads);
@@ -118,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderDrivers(drivers);
       renderBrokers(brokers);
       renderProposals(proposals);
+      renderCases(cases);
       document.querySelector('#contract-progress').style.width = `${summary.pending_contracts ? 72 : 100}%`;
       renderMessages(summary.recent_messages);
       connectionLabel.textContent = 'Connected to API';

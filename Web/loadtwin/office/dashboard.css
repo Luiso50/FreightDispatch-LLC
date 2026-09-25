@@ -115,6 +115,12 @@ h1 em { color: var(--orange); font-style: normal; }
 .proposal-row strong { font: 600 12px var(--display); }
 .proposal-row small { color: var(--ink-soft); font-size: 10px; }
 .proposal-status { background: var(--mint); color: var(--teal); font-size: 9px; justify-self: end; padding: 3px 6px; text-transform: uppercase; }
+.trulos-panel { margin: 0 auto 22px; max-width: 1280px; }
+.case-list { display: grid; gap: 10px; margin-top: 21px; }
+.case-row { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: 1fr 1fr 110px; padding: 10px 0; }
+.case-row strong { font: 600 12px var(--display); }
+.case-row small { color: var(--ink-soft); display: block; font-size: 10px; }
+.case-status { background: #fff0dc; color: #a7671d; font-size: 9px; justify-self: end; padding: 3px 6px; text-transform: uppercase; }
 .broker-list { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); margin-top: 21px; }
 .broker-row { border: 1px solid var(--line); display: grid; gap: 4px; padding: 13px; }
 .broker-row strong { font: 600 13px var(--display); }
