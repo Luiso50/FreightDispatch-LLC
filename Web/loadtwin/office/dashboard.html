@@ -152,6 +152,13 @@
 
       <section class="panel trulos-panel" id="trulos-queue">
         <div class="panel-heading"><div><span class="panel-kicker">External TMS handoff</span><h2>Trulos queue</h2></div><i data-lucide="external-link"></i></div>
+        <form class="quick-form case-form" id="case-form">
+          <label>Case ID<input name="case_id" placeholder="CASE-..." required></label>
+          <label>Status<select name="status"><option value="pending_trulos">Pending Trulos</option><option value="ordered">Ordered</option><option value="in_transit">In transit</option><option value="completed">Completed</option></select></label>
+          <label>External order ID<input name="external_order_id" placeholder="TRULOS-ORDER-001"></label>
+          <button class="quick-submit" type="submit"><i data-lucide="refresh-cw"></i> Update case</button>
+          <span class="quick-form-status" id="case-form-status" role="status"></span>
+        </form>
         <div class="case-list" id="case-list"><div class="empty-state">No accepted loads waiting for Trulos.</div></div>
       </section>
     </main>

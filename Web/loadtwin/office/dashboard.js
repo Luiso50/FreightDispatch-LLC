@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const evidenceFormStatus = document.querySelector('#evidence-form-status');
   const proposalForm = document.querySelector('#proposal-form');
   const proposalFormStatus = document.querySelector('#proposal-form-status');
+  const caseForm = document.querySelector('#case-form');
+  const caseFormStatus = document.querySelector('#case-form-status');
 
   const setText = (selector, value) => {
     const element = document.querySelector(selector);
@@ -299,6 +301,31 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadSummary();
     } catch (error) {
       proposalFormStatus.textContent = 'Could not send proposal';
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+  caseForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = caseForm.querySelector('button');
+    submitButton.disabled = true;
+    caseFormStatus.textContent = 'Updating...';
+    try {
+      const values = Object.fromEntries(new FormData(caseForm));
+      const response = await fetch(`${apiBaseUrl}/booking-cases/${encodeURIComponent(values.case_id)}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: values.status,
+          external_order_id: values.external_order_id || null,
+        }),
+      });
+      if (!response.ok) throw new Error('Case update failed');
+      caseForm.reset();
+      caseFormStatus.textContent = 'Case updated';
+      await loadSummary();
+    } catch (error) {
+      caseFormStatus.textContent = 'Could not update case';
     } finally {
       submitButton.disabled = false;
     }
