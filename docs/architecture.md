@@ -42,6 +42,8 @@ Una aceptación crea un `BookingCase` en `driver_accepted`; el caso queda pendie
 
 `POST /booking-cases/{case_id}/trulos-order` registra la referencia externa y avanza el caso a `ordered` después de que el operador tome la orden en Trulos.
 
+`POST /booking-cases/{case_id}/status` permite seguir el caso en `in_transit` o `completed` sin modificar la orden dentro de Trulos.
+
 Los endpoints `/booking-cases/{case_id}/payments` reflejan estados y comprobantes procesados por Trulos/Stripe; LoadTwin no cobra ni almacena credenciales de Stripe.
 
 ## Roadmap

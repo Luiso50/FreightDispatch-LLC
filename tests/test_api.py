@@ -267,6 +267,18 @@ def test_booking_case_can_record_trulos_order_reference():
     assert response.json()['external_order_id'] == 'TRULOS-ORDER-001'
 
 
+def test_booking_case_status_can_advance_after_trulos_order():
+    case = client.get('/booking-cases').json()[0]
+
+    response = client.post(f"/booking-cases/{case['id']}/status", json={
+        'status': 'in_transit',
+    })
+
+    assert response.status_code == 200
+    assert response.json()['status'] == 'in_transit'
+    assert response.json()['external_order_id'] == 'TRULOS-ORDER-001'
+
+
 def test_trulos_payment_can_be_mirrored_on_booking_case():
     case = client.get('/booking-cases').json()[0]
 

@@ -135,6 +135,11 @@ class TrulosOrderRequest(BaseModel):
     external_order_id: str
 
 
+class BookingCaseStatusRequest(BaseModel):
+    status: BookingCaseStatus
+    external_order_id: str | None = None
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     task = asyncio.create_task(_run_periodic_load_scan())
@@ -272,6 +277,18 @@ def mark_case_ordered(case_id: str, request: TrulosOrderRequest) -> BookingCase:
     return operations_store.mark_booking_case_ordered(
         case_id, request.external_order_id
     )
+
+
+@app.post("/booking-cases/{case_id}/status", response_model=BookingCase)
+def update_case_status(
+    case_id: str, request: BookingCaseStatusRequest
+) -> BookingCase:
+    updated_case = operations_store.update_booking_case_status(
+        case_id, request.status, request.external_order_id
+    )
+    if updated_case is None:
+        raise HTTPException(status_code=404, detail="Booking case not found")
+    return updated_case
 
 
 @app.post("/booking-cases/{case_id}/payments", response_model=PaymentMirror, status_code=201)

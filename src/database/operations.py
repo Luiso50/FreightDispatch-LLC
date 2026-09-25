@@ -237,6 +237,24 @@ class OperationsStore:
         self.booking_cases[case_id] = updated_case
         return updated_case
 
+    def update_booking_case_status(
+        self,
+        case_id: str,
+        status: BookingCaseStatus,
+        external_order_id: str | None = None,
+    ) -> BookingCase | None:
+        case = self.booking_cases.get(case_id)
+        if case is None:
+            return None
+        updated_case = case.model_copy(
+            update={
+                "status": status,
+                "external_order_id": external_order_id or case.external_order_id,
+            }
+        )
+        self.booking_cases[case_id] = updated_case
+        return updated_case
+
     def add_payment_mirror(self, payment: PaymentMirror) -> PaymentMirror:
         self.payment_mirrors[payment.id] = payment
         return payment
