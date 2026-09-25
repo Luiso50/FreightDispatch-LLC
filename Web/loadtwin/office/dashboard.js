@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshButton = document.querySelector('#refresh-button');
   const errorBanner = document.querySelector('#error-banner');
   const connectionLabel = document.querySelector('#connection-label');
+  const whatsappStatus = document.querySelector('#whatsapp-status');
   const brokerForm = document.querySelector('#broker-form');
   const brokerFormStatus = document.querySelector('#broker-form-status');
   const loadForm = document.querySelector('#load-form');
@@ -103,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshButton.classList.add('loading');
     errorBanner.hidden = true;
     try {
-      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse, brokersResponse, proposalsResponse, casesResponse] = await Promise.all([
+      const [summaryResponse, loadsResponse, renewalsResponse, driversResponse, brokersResponse, proposalsResponse, casesResponse, whatsappResponse] = await Promise.all([
         fetch(`${apiBaseUrl}/dashboard/summary`),
         fetch(`${apiBaseUrl}/loads`),
         fetch(`${apiBaseUrl}/contracts/renewals?days=30`),
@@ -111,10 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`${apiBaseUrl}/brokers`),
         fetch(`${apiBaseUrl}/proposals`),
         fetch(`${apiBaseUrl}/booking-cases`),
+        fetch(`${apiBaseUrl}/integrations/whatsapp/status`),
       ]);
-      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok || !brokersResponse.ok || !proposalsResponse.ok || !casesResponse.ok) throw new Error('Dashboard request failed');
-      const [summary, loads, renewals, drivers, brokers, proposals, cases] = await Promise.all([
-        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(), brokersResponse.json(), proposalsResponse.json(), casesResponse.json(),
+      if (!summaryResponse.ok || !loadsResponse.ok || !renewalsResponse.ok || !driversResponse.ok || !brokersResponse.ok || !proposalsResponse.ok || !casesResponse.ok || !whatsappResponse.ok) throw new Error('Dashboard request failed');
+      const [summary, loads, renewals, drivers, brokers, proposals, cases, whatsapp] = await Promise.all([
+        summaryResponse.json(), loadsResponse.json(), renewalsResponse.json(), driversResponse.json(), brokersResponse.json(), proposalsResponse.json(), casesResponse.json(), whatsappResponse.json(),
       ]);
       setText('#active-drivers', summary.active_drivers);
       setText('#active-loads', summary.active_loads);
@@ -131,6 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderBrokers(brokers);
       renderProposals(proposals);
       renderCases(cases);
+      const whatsappReady = whatsapp.verify_token_configured && whatsapp.app_secret_configured && whatsapp.access_token_configured && whatsapp.phone_number_id_configured;
+      whatsappStatus.textContent = `WhatsApp: ${whatsappReady ? 'ready' : 'configuration pending'}`;
       document.querySelector('#contract-progress').style.width = `${summary.pending_contracts ? 72 : 100}%`;
       renderMessages(summary.recent_messages);
       connectionLabel.textContent = 'Connected to API';
