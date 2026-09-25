@@ -34,6 +34,7 @@ from src.database.models import (
     EvidenceEvent,
     EvidenceType,
     Load,
+    LoadProposal,
     LoadStatus,
     Message,
     OnboardingCase,
@@ -106,6 +107,13 @@ class EmailEvidenceRequest(BaseModel):
     document_url: str | None = None
 
 
+class ProposalRequest(BaseModel):
+    load_id: str
+    driver_id: str
+    message: str
+    send_whatsapp: bool = False
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     task = asyncio.create_task(_run_periodic_load_scan())
@@ -175,6 +183,32 @@ def create_load(load: Load) -> Load:
 @app.get("/loads", response_model=list[Load])
 def list_registered_loads() -> list[Load]:
     return list(operations_store.loads.values())
+
+
+@app.post("/proposals", response_model=LoadProposal, status_code=201)
+def create_load_proposal(request: ProposalRequest) -> LoadProposal:
+    driver = operations_store.drivers.get(request.driver_id)
+    if driver is None:
+        raise HTTPException(status_code=404, detail="Driver not found")
+    if request.load_id not in operations_store.loads:
+        raise HTTPException(status_code=404, detail="Load not found")
+    if request.send_whatsapp:
+        try:
+            send_whatsapp_text_message(driver.phone, request.message)
+        except WhatsAppSendError as error:
+            raise HTTPException(status_code=502, detail=str(error)) from error
+    return operations_store.add_proposal(
+        LoadProposal(
+            load_id=request.load_id,
+            driver_id=request.driver_id,
+            message=request.message,
+        )
+    )
+
+
+@app.get("/proposals", response_model=list[LoadProposal])
+def list_load_proposals() -> list[LoadProposal]:
+    return operations_store.list_proposals()
 
 
 @app.post("/drivers/{driver_id}/documents", response_model=DriverDocument, status_code=201)

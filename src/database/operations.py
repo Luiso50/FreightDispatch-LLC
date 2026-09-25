@@ -8,6 +8,7 @@ from src.database.models import (
     DriverStatus,
     EvidenceEvent,
     Load,
+    LoadProposal,
     Message,
     OnboardingCase,
     OnboardingDocument,
@@ -29,6 +30,7 @@ class OperationsStore:
         self.messages: dict[str, Message] = {}
         self.onboarding_cases: dict[str, OnboardingCase] = {}
         self.loads: dict[str, Load] = {}
+        self.proposals: dict[str, LoadProposal] = {}
 
     def add_driver(self, driver: Driver) -> Driver:
         self.drivers[driver.id] = driver
@@ -166,3 +168,10 @@ class OperationsStore:
     def add_load(self, load: Load) -> Load:
         self.loads[load.id] = load
         return load
+
+    def add_proposal(self, proposal: LoadProposal) -> LoadProposal:
+        self.proposals[proposal.id] = proposal
+        return proposal
+
+    def list_proposals(self) -> list[LoadProposal]:
+        return list(self.proposals.values())

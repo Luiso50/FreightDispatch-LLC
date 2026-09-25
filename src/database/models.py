@@ -98,6 +98,13 @@ class CommissionStatus(StrEnum):
     PAID = "paid"
 
 
+class ProposalStatus(StrEnum):
+    SENT = "sent"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    EXPIRED = "expired"
+
+
 class Address(BaseModel):
     city: str
     state: str
@@ -197,6 +204,16 @@ class Load(BaseModel):
     source: Optional[str] = None
     external_reference: Optional[str] = None
     notes: Optional[str] = None
+
+
+class LoadProposal(BaseModel):
+    id: str = Field(default_factory=lambda: f"OFF-{uuid4().hex[:10].upper()}")
+    load_id: str
+    driver_id: str
+    message: str
+    status: ProposalStatus = ProposalStatus.SENT
+    created_at: datetime = Field(default_factory=utc_now)
+    responded_at: Optional[datetime] = None
 
 
 class Broker(BaseModel):

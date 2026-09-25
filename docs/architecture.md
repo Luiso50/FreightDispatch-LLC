@@ -34,6 +34,8 @@ Los endpoints deben depender de modelos y repositorios, no de Firestore directam
 
 La evidencia se relaciona con un `load_id` y conserva tipo, descripción, origen, fecha, URL y metadatos. Esto permite reconstruir una operación sin asumir que WhatsApp es el archivo legal definitivo. `POST /loads/{load_id}/evidence/email` registra asunto, destinatarios y cuerpo del email.
 
+`POST /proposals` registra la propuesta enviada a un driver; `send_whatsapp` permite el envío explícito. La orden oficial continúa tomándose en Trulos después de la aceptación.
+
 ## Roadmap
 
 1. **Fase 1:** drivers, onboarding documental, contratos, cargas y evidencia; completar repositorios y casos de uso.

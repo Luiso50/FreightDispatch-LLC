@@ -199,6 +199,31 @@ def test_dashboard_summary_reports_operational_metrics():
     assert isinstance(summary['recent_messages'], list)
 
 
+def test_load_proposal_is_recorded_for_existing_driver_and_load():
+    driver = client.post('/drivers', json={
+        'name': 'Proposal Driver',
+        'phone': '+17860000008',
+    }).json()
+    client.post('/loads', json={
+        'id': 'L-PROPOSAL-001',
+        'origin': {'city': 'Miami', 'state': 'FL'},
+        'destination': {'city': 'Atlanta', 'state': 'GA'},
+        'equipment_type': 'Dry Van',
+        'offered_rate': '1800.00',
+        'status': 'available',
+    })
+
+    response = client.post('/proposals', json={
+        'load_id': 'L-PROPOSAL-001',
+        'driver_id': driver['id'],
+        'message': 'Miami to Atlanta, Dry Van, $1,800. Do you accept?',
+    })
+
+    assert response.status_code == 201
+    assert response.json()['status'] == 'sent'
+    assert client.get('/proposals').json()[0]['driver_id'] == driver['id']
+
+
 def test_contract_can_be_accepted():
     contract = client.post('/contracts', json={
         'id': 'CON-9001',
