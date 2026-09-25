@@ -1,5 +1,6 @@
 from src.database.models import (
     Broker,
+    BookingCase,
     Commission,
     Contract,
     DocumentType,
@@ -32,6 +33,7 @@ class OperationsStore:
         self.onboarding_cases: dict[str, OnboardingCase] = {}
         self.loads: dict[str, Load] = {}
         self.proposals: dict[str, LoadProposal] = {}
+        self.booking_cases: dict[str, BookingCase] = {}
 
     def add_driver(self, driver: Driver) -> Driver:
         self.drivers[driver.id] = driver
@@ -199,3 +201,20 @@ class OperationsStore:
         )
         self.proposals[proposal_id] = updated_proposal
         return updated_proposal
+
+    def add_booking_case(self, case: BookingCase) -> BookingCase:
+        self.booking_cases[case.id] = case
+        return case
+
+    def booking_case_for(self, load_id: str, driver_id: str) -> BookingCase | None:
+        return next(
+            (
+                case
+                for case in self.booking_cases.values()
+                if case.load_id == load_id and case.driver_id == driver_id
+            ),
+            None,
+        )
+
+    def list_booking_cases(self) -> list[BookingCase]:
+        return list(self.booking_cases.values())

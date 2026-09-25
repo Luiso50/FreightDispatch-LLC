@@ -249,6 +249,10 @@ def test_driver_can_accept_proposal_via_response_endpoint():
     assert response.status_code == 200
     assert response.json()['status'] == 'accepted'
     assert response.json()['responded_at'] is not None
+    cases = client.get('/booking-cases')
+    assert cases.status_code == 200
+    assert cases.json()[0]['status'] == 'driver_accepted'
+    assert cases.json()[0]['agreed_rate'] is None
 
 
 def test_contract_can_be_accepted():

@@ -105,6 +105,14 @@ class ProposalStatus(StrEnum):
     EXPIRED = "expired"
 
 
+class BookingCaseStatus(StrEnum):
+    DRIVER_ACCEPTED = "driver_accepted"
+    PENDING_TRULOS = "pending_trulos"
+    ORDERED = "ordered"
+    IN_TRANSIT = "in_transit"
+    COMPLETED = "completed"
+
+
 class Address(BaseModel):
     city: str
     state: str
@@ -214,6 +222,16 @@ class LoadProposal(BaseModel):
     status: ProposalStatus = ProposalStatus.SENT
     created_at: datetime = Field(default_factory=utc_now)
     responded_at: Optional[datetime] = None
+
+
+class BookingCase(BaseModel):
+    id: str = Field(default_factory=lambda: f"CASE-{uuid4().hex[:10].upper()}")
+    load_id: str
+    driver_id: str
+    agreed_rate: Optional[Decimal] = Field(default=None, ge=0)
+    status: BookingCaseStatus = BookingCaseStatus.DRIVER_ACCEPTED
+    external_order_id: Optional[str] = None
+    created_at: datetime = Field(default_factory=utc_now)
 
 
 class Broker(BaseModel):

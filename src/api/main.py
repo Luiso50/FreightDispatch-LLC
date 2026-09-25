@@ -21,6 +21,7 @@ from src.agent.profitability import evaluate_load_profitability
 from src.agent.request_parser import parse_load_request
 from src.database.models import (
     Broker,
+    BookingCase,
     Carrier,
     Commission,
     CommissionStatus,
@@ -228,7 +229,22 @@ def respond_to_load_proposal(
     proposal = operations_store.respond_to_proposal(proposal_id, request.status)
     if proposal is None:
         raise HTTPException(status_code=404, detail="Proposal not found")
+    if request.status == ProposalStatus.ACCEPTED:
+        load = operations_store.loads.get(proposal.load_id)
+        if load and operations_store.booking_case_for(proposal.load_id, proposal.driver_id) is None:
+            operations_store.add_booking_case(
+                BookingCase(
+                    load_id=proposal.load_id,
+                    driver_id=proposal.driver_id,
+                    agreed_rate=load.offered_rate,
+                )
+            )
     return proposal
+
+
+@app.get("/booking-cases", response_model=list[BookingCase])
+def list_booking_cases() -> list[BookingCase]:
+    return operations_store.list_booking_cases()
 
 
 @app.post("/drivers/{driver_id}/documents", response_model=DriverDocument, status_code=201)

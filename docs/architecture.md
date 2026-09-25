@@ -38,6 +38,8 @@ La evidencia se relaciona con un `load_id` y conserva tipo, descripción, origen
 
 `POST /proposals/{proposal_id}/respond` registra aceptación o rechazo. Las respuestas `ACEPTO`, `ACEPTAR` y `RECHAZO` por WhatsApp actualizan la propuesta pendiente del driver registrado.
 
+Una aceptación crea un `BookingCase` en `driver_accepted`; el caso queda pendiente de tomar la orden en Trulos y conserva la referencia externa cuando esa coordinación se complete.
+
 ## Roadmap
 
 1. **Fase 1:** drivers, onboarding documental, contratos, cargas y evidencia; completar repositorios y casos de uso.
